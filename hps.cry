@@ -1,26 +1,25 @@
 module hps where
-	// parameters common to all hps parameter sets 
-	type common_p = 3
-	common_Lift x = x // Identity function
-
 	// ntruhps2048509 parameter set
-	submodule ntruhps2048509 = ntru where 
-		type n = 509
-		type p = common_p
+	submodule params509 where 
+		type n = 509	
+		type p = 3
 		type q = 2048
-		Lift = common_Lift
-		// hash = sha3_256
+		type sample_key_bits = 19304
+		type sample_plaintext_bits = 19304
+		Lift x = x // probably needs to be changed out
 
-		// TODO: implement
-		// Sample_fg a = import from another module
-		// Sample_rm a = import from another module
+	submodule sampling509 where 
+		import submodule params509 as P
+		import module ternary {submodule params509} as T 
+		import module sampling_funcs {submodule params509}
+		Sample_fg = sample_fg_hps
+		Sample_rm = sample_rm_hps
+		type sample_key_bits = P::sample_key_bits
+		type sample_plaintext_bits = P::sample_plaintext_bits
+		type TernaryPoly = T::TernaryPoly
 
-		type sample_key_bits = sample_iid_bits + sample_iid_bits
-		type sample_plaintext_bits = sample_iid_bits + sample_fixed_type_bits
-
-		// Derived parameters that are used for defining HPS specific parameters   
-		// The number of random bits consumed by the Ternary routine
-		type sample_iid_bits = 8 * (n - 1)
-
-		// The number of random bits consumed by the Fixed_Type routine
-		type sample_fixed_type_bits = 30 * (n - 1)
+	submodule ntruhps2048509 = ntru {
+		params = submodule params509, 
+		S = submodule sampling509
+	}
+			

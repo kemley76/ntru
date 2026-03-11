@@ -1,0 +1,17 @@
+module ternary where
+	parameter 
+		type n : #
+	
+	// Here, Integer represents only the set {-1, 0, 1}
+	// Could technically use Z 3, but that might alter the lift operations?
+	type TernaryPoly = [n - 1]Integer 
+
+	// These types all define certain polynomials used in NTRU
+	// There seem to be specific ones for the different parameter sets, 
+	// but I'm not sure how to define a type like the subset of TernaryPoly, consisting
+	// of polynomials with the non-negative correlation property.
+	/*type L_f = TernaryPoly
+	type L_g = TernaryPoly
+	type L_r = TernaryPoly
+	type L_m = TernaryPoly
+	Lift: L_m -> TernaryPoly*/

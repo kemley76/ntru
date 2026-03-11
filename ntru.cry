@@ -1,18 +1,21 @@
 module ntru where
 	import interface params
-	
+	import interface sampling as S
+	import module polynomials { interface params } as Poly
+	import module ternary { interface params }
+
 	// PASSIVELY SECURE DPKE
 
 	DPKE_Key_Pair : [sample_key_bits] -> ([dpke_private_key_bytes][8], [dpke_public_key_bytes][8])
 	DPKE_Key_Pair coins = error "Not implemented"
 
-	DPKE_Public_Key : L_f -> L_g -> (Rq, Sq)
+	DPKE_Public_Key : TernaryPoly -> TernaryPoly -> (Poly::Rq, Poly::Sq)
 	DPKE_Public_Key f g = error "Not implemented"
 
 	DPKE_Encrypt : [dpke_public_key_bytes][8] -> [dpke_plaintext_bytes][8] -> [dpke_ciphertext_bytes][8]
 	DPKE_Encrypt packed_public_key packed_rm = error "Not implemented"
 
-	DPKE_Decrypt : [dpke_private_key_bytes][8] -> [dpke_plaintext_bytes][8] -> ([dpke_plaintext_bytes][8], [1])
+	DPKE_Decrypt : [dpke_private_key_bytes][8] -> [dpke_ciphertext_bytes][8] -> ([dpke_plaintext_bytes][8], [1])
 	DPKE_Decrypt packed_private_key packed_ciphertext = error "Not implemented"
 
 	// STRONGLY SECURE KEM

@@ -1,0 +1,6 @@
+module bits_and_bytes where
+	bits_to_bytes : [_] -> [_][8]
+	bits_to_bytes b = error "Not implemented"
+
+	bytes_to_bits : [_][8] -> [_]
+	bytes_to_bits B = error "Not implemented"

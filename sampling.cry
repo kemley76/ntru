@@ -1,0 +1,10 @@
+interface module sampling where
+	type TernaryPoly : *
+	type sample_key_bits: #
+	type sample_plaintext_bits: #
+
+	// A routine for sampling from L_f x L_g
+	Sample_fg: [sample_key_bits] -> (TernaryPoly, TernaryPoly)
+
+	// A routine for sampling from L_r x L_m
+	Sample_rm: [sample_plaintext_bits] -> (TernaryPoly, TernaryPoly)

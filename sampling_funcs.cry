@@ -1,0 +1,16 @@
+module sampling_funcs where
+	import interface params
+	import module polynomials { interface params } as Poly
+	import module ternary { interface params }
+
+	sample_fg_hps : [sample_key_bits] -> (TernaryPoly, TernaryPoly)
+	sample_fg_hps fg_bits = error "Not implemented"
+
+	sample_rm_hps : [sample_plaintext_bits] -> (TernaryPoly, TernaryPoly)
+	sample_rm_hps rm_bits = error "Not implemented"
+
+	sample_fg_hrss : [sample_key_bits] -> (TernaryPoly, TernaryPoly)
+	sample_fg_hrss fg_bits = error "Not implemented"
+
+	sample_rm_hrss : [sample_plaintext_bits] -> (TernaryPoly, TernaryPoly)
+	sample_rm_hrss rm_bits = error "Not implemented"

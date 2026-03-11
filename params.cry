@@ -1,17 +1,4 @@
 interface module params where
-	// Some helpful type definitions
-	// Will probably have to make "classes" for them to support arithmetic operations
-	// I'm not sure if this representation still works since the spec seems to consider 
-	// canonical representatives to have coefficients centered around 0, e.g. -q/2, -q/2 + 1,... q/2 - 1
-	type R3 = [n](Z 3)     // Coefficients mod 3, degree < n
-	type Rq = [n](Z q) 	   // Coefficients mod q, degree < n
-	type S2 = [n - 1](Z 2) // Coefficients mod 2, degree < n - 1
-	type S3 = [n - 1](Z 3) // Coefficients mod 3, degree < n - 1
-	type Sq = [n - 1](Z q) // Coefficients mod q, degree < n - 1
-
-	// Here, Integer represents only the set {-1, 0, 1}
-	// Could technically use Z 3, but that might alter the lift operations?
-	type TernaryPoly = [n - 1]Integer 
 
 	// BASE PARAMETERS:
 	// TODO: Define n, p, and q to be coprime positive integers
@@ -20,40 +7,28 @@ interface module params where
 	type q : #
 	type constraint (fin n, fin p, fin q, n >= 1, q >= 1)
 
-	// These types all define certain polynomials used in NTRU
-	// There seem to be specific ones for the different parameter sets, 
-	// but I'm not sure how to define a type like the subset of TernaryPoly, consisting
-	// of polynomials with the non-negative correlation property.
-	type L_f = TernaryPoly
-	type L_g = TernaryPoly
-	type L_r = TernaryPoly
-	type L_m = TernaryPoly
 
-	Lift: L_m -> TernaryPoly
+	// The number of random bits consumed by the Sample_fg routine
+	// HPS: sample_iid_bits + sample_fixed_type_bits
+	// HRSS: sample_iid_bits * 2
+	type sample_key_bits: #
+
+	// The number of random bits consumed by the Sample_rm routine
+	// HPS: sample_iid_bits + sample_fixed_type_bits
+	// HRSS: sample_iid_bits * 2
+	type sample_plaintext_bits: #
 
 	// ADDITIONAL PARAMETERS:	
 
 	// TODO add function signature for hash function
 
-	// A routine for sampling from L_f x L_g
-	Sample_fg: [sample_key_bits] -> (L_f, L_g)
-
-	// A routine for sampling from L_r x L_m
-	Sample_rm: [sample_plaintext_bits] -> (L_r, L_m)
-
 	// The number of random bits consumed by KeyGen
 	type key_seed_bits = sample_key_bits + prf_key_bits
 
-	// The number of random bits consumed by the Sample_fg routine
-	type sample_key_bits: #
-
-	// The number of random bits consumed by the Sample_rm routine
-	type sample_plaintext_bits: #
 
 	// DERIVED CONSTANTS:
 
 	type logq = lg2 q
-
 
 	// The number of bytes output by pack_S3
 	type packed_s3_bytes = (n - 1) /^ 5
