@@ -3,8 +3,11 @@ module sampling_funcs where
 	import module polynomials { interface params } as Poly
 	import module ternary { interface params }
 
-	sample_fg_hps : [sample_key_bits] -> (TernaryPoly, TernaryPoly)
-	sample_fg_hps fg_bits = error "Not implemented"
+	sample_fg_hps : (sample_key_bits == sample_iid_bits + sample_fixed_type_bits) => [sample_key_bits] -> (TernaryPoly, TernaryPoly)
+	sample_fg_hps fg_bits = (Ternary f_bits, Fixed_Type g_bits)
+		where 
+			(f_bits, g_bits) = splitAt`{sample_iid_bits, sample_fixed_type_bits} fg_bits
+
 
 	sample_rm_hps : [sample_plaintext_bits] -> (TernaryPoly, TernaryPoly)
 	sample_rm_hps rm_bits = error "Not implemented"
@@ -14,3 +17,12 @@ module sampling_funcs where
 
 	sample_rm_hrss : [sample_plaintext_bits] -> (TernaryPoly, TernaryPoly)
 	sample_rm_hrss rm_bits = error "Not implemented"
+
+	Ternary : [sample_iid_bits] -> TernaryPoly
+	Ternary bits = [
+		sum [2 ^^ (2 * j * if bits @ (8 * i + j + 1) then 1 else 0) | j <- [0..7]]
+		| i <- [0..n-2] 
+	] // TODO: Convert this output to canonical form
+
+	Fixed_Type : [sample_fixed_type_bits] -> TernaryPoly
+	Fixed_Type blah = error "Not implemented"

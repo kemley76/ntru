@@ -5,7 +5,7 @@ interface module params where
 	type n : # 
 	type p : #
 	type q : #
-	type constraint (fin n, fin p, fin q, n >= 1, q >= 1)
+	type constraint (fin n, n >= 2, fin p, fin q, n >= 1, q >= 1)
 
 
 	// The number of random bits consumed by the Sample_fg routine
@@ -29,6 +29,12 @@ interface module params where
 	// DERIVED CONSTANTS:
 
 	type logq = lg2 q
+
+	// The number of bits consumed by the Ternary routine
+	type sample_iid_bits = 8 * (n - 1)
+
+	// The number of random bits consumed by the Fixed_Type routine.
+	type sample_fixed_type_bits = 30 * (n - 1) 
 
 	// The number of bytes output by pack_S3
 	type packed_s3_bytes = (n - 1) /^ 5
