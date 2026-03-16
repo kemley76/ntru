@@ -1,15 +1,24 @@
 module ntru where
 	import interface params
-	import interface sampling as S
+	import module sampling
+	import interface submodule samp as S
 	import module polynomials { interface params } as Poly
-	import module ternary { interface params }
 
 	// PASSIVELY SECURE DPKE
+	DPKE_Key_Pair : (S::sample_key_bits == sample_key_bits, S::n == n) =>
+		[sample_key_bits] -> ([dpke_private_key_bytes][8], [dpke_public_key_bytes][8])
+	DPKE_Key_Pair coins = (packed_private_key, packed_public_key)
+		where
+			// Technically should return in canonical form, but I can't get 
+			// types to work nicely with that 
+			(f0, g0) = S::Sample_fg coins 
+			(f, g) = (Poly::canonical_S3 f0, Poly::canonical_S3 g0)
+			f_p = Poly::S3_inverse f
+			(h, h_q) = DPKE_Public_Key f g
+			packed_private_key = (Poly::pack_S3 f) # (Poly::pack_S3 f_p) # (Poly::pack_Sq h_q)
+			packed_public_key = Poly::pack_Rq0 h
 
-	DPKE_Key_Pair : [sample_key_bits] -> ([dpke_private_key_bytes][8], [dpke_public_key_bytes][8])
-	DPKE_Key_Pair coins = error "Not implemented"
-
-	DPKE_Public_Key : TernaryPoly -> TernaryPoly -> (Poly::Rq, Poly::Sq)
+	DPKE_Public_Key : Poly::S3 -> Poly::S3 -> (Poly::Rq, Poly::Sq)
 	DPKE_Public_Key f g = error "Not implemented"
 
 	DPKE_Encrypt : [dpke_public_key_bytes][8] -> [dpke_plaintext_bytes][8] -> [dpke_ciphertext_bytes][8]

@@ -1,10 +1,10 @@
 module ternary where
-	parameter 
-		type n : #
+	//parameter 
+		//type n : #
 	
 	// Here, Integer represents only the set {-1, 0, 1}
 	// Could technically use Z 3, but that might alter the lift operations?
-	type TernaryPoly = [n - 1]Integer 
+	type TernaryPoly n = [n - 1]Integer 
 
 	// These types all define certain polynomials used in NTRU
 	// There seem to be specific ones for the different parameter sets, 

@@ -10,13 +10,12 @@ module hps where
 
 	submodule sampling509 where 
 		import submodule params509 as P
-		import module ternary {submodule params509} as T 
 		import module sampling_funcs {submodule params509}
 		Sample_fg = sample_fg_hps
 		Sample_rm = sample_rm_hps
 		type sample_key_bits = P::sample_key_bits
 		type sample_plaintext_bits = P::sample_plaintext_bits
-		type TernaryPoly = T::TernaryPoly
+		type n = P::n
 
 	submodule ntruhps2048509 = ntru {
 		params = submodule params509, 

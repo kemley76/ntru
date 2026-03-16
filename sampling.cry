@@ -1,10 +1,13 @@
-interface module sampling where
-	type TernaryPoly : *
-	type sample_key_bits: #
-	type sample_plaintext_bits: #
+module sampling where
+	import module ternary 
+	interface submodule samp where
+		type n : #
+		type sample_key_bits: #
+		type sample_plaintext_bits: #
+		type constraint (n >= 2)
 
-	// A routine for sampling from L_f x L_g
-	Sample_fg: [sample_key_bits] -> (TernaryPoly, TernaryPoly)
+		// A routine for sampling from L_f x L_g
+		Sample_fg: [sample_key_bits] -> (TernaryPoly n, TernaryPoly n)
 
-	// A routine for sampling from L_r x L_m
-	Sample_rm: [sample_plaintext_bits] -> (TernaryPoly, TernaryPoly)
+		// A routine for sampling from L_r x L_m
+		Sample_rm: [sample_plaintext_bits] -> (TernaryPoly n, TernaryPoly n)

@@ -1,9 +1,10 @@
 module polynomials where
 	import interface params
+	import module ternary
 
 	// Packing and unpacking operations
 	// Rq 
-	type Rq = [n](Z q) 	   // Coefficients mod q, degree < n
+	newtype Rq = { coeffs : [n](Z q) }	   // Coefficients mod q, degree < n
 
 	pack_Rq0 : Rq -> [packed_rq0_bytes][8]
 	pack_Rq0 a = error "Not implemented"
@@ -17,7 +18,7 @@ module polynomials where
 	canonical_Rq0 a = error "Not implemented"
 
 	// Sq
-	type Sq = [n - 1](Z q) // Coefficients mod q, degree < n - 1
+	newtype Sq = { coeffs : [n - 1](Z q) } // Coefficients mod q, degree < n - 1
 
 	pack_Sq : Sq -> [packed_sq_bytes][8]
 	pack_Sq a = error "Not implemented"
@@ -33,7 +34,7 @@ module polynomials where
 	Sq_inverse a = error "Not implemented" 
 
 	// S3
-	type S3 = [n - 1](Z 3) // Coefficients mod 3, degree < n - 1
+	newtype S3 = { coeffs : [n - 1](Z 3) } // Coefficients mod 3, degree < n - 1
 	pack_S3 : S3 -> [packed_s3_bytes][8]
 	pack_S3 a = error "Not implemented"
 	
@@ -44,11 +45,12 @@ module polynomials where
 	S3_inverse a = error "Not implemented" 
 
 	// Convert to canoical form (don't know if needed)
-	canonical_S3 : S3 -> [n - 1]Integer
+	canonical_S3 : TernaryPoly n -> S3
 	canonical_S3 a = error "Not implemented"
 
 	// S2
-	type S2 = [n - 1](Z 2) // Coefficients mod 2, degree < n - 1
+	newtype S2 = { coeffs : [n - 1](Z 2) } // Coefficients mod 2, degree < n - 1
 
 	S2_inverse : S3 -> S3
 	S2_inverse a = error "Not implemented" 
+
