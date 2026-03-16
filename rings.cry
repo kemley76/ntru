@@ -1,6 +1,6 @@
-module polynomials where
+module rings where
 	import interface params
-	import module ternary
+	import module polynomial
 
 	// Packing and unpacking operations
 	// Rq 
@@ -14,7 +14,7 @@ module polynomials where
 
 
 	// Convert to canoical form (don't know if needed)
-	canonical_Rq0 : Rq -> [n]Integer
+	canonical_Rq0 : Polynomial (n - 1) -> Rq
 	canonical_Rq0 a = error "Not implemented"
 
 	// Sq
@@ -27,7 +27,7 @@ module polynomials where
 	unpack_Sq B = error "Not implemented"
 
 	// Convert to canoical form (don't know if needed)
-	canonical_Sq : Sq -> [n - 1]Integer
+	canonical_Sq : Polynomial (n - 2) -> Sq
 	canonical_Sq a = error "Not implemented"
 
 	Sq_inverse : Sq -> Sq
@@ -45,7 +45,7 @@ module polynomials where
 	S3_inverse a = error "Not implemented" 
 
 	// Convert to canoical form (don't know if needed)
-	canonical_S3 : TernaryPoly n -> S3
+	canonical_S3 : Polynomial (n - 2) -> S3
 	canonical_S3 a = error "Not implemented"
 
 	// S2

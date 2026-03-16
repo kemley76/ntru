@@ -1,5 +1,5 @@
 module sampling where
-	import module ternary 
+	import module polynomial 
 	interface submodule samp where
 		type n : #
 		type sample_key_bits: #
@@ -7,7 +7,7 @@ module sampling where
 		type constraint (n >= 2)
 
 		// A routine for sampling from L_f x L_g
-		Sample_fg: [sample_key_bits] -> (TernaryPoly n, TernaryPoly n)
+		Sample_fg: [sample_key_bits] -> (Polynomial (n - 2), Polynomial (n - 2))
 
 		// A routine for sampling from L_r x L_m
-		Sample_rm: [sample_plaintext_bits] -> (TernaryPoly n, TernaryPoly n)
+		Sample_rm: [sample_plaintext_bits] -> (Polynomial (n - 2), Polynomial (n - 2))

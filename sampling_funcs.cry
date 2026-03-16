@@ -1,33 +1,33 @@
 module sampling_funcs where
 	import interface params
-	import module polynomials { interface params } as Poly
-	import module ternary
+	//import module rings { interface params } as Rings
+	import module polynomial
 
 	sample_fg_hps : (sample_key_bits == sample_iid_bits + sample_fixed_type_bits) => 
-		[sample_key_bits] -> (TernaryPoly n, TernaryPoly n)
+		[sample_key_bits] -> (Polynomial (n - 2), Polynomial (n - 2))
 	sample_fg_hps fg_bits = (Ternary f_bits, Fixed_Type g_bits)
 		where 
 			(f_bits, g_bits) = splitAt`{sample_iid_bits, sample_fixed_type_bits} fg_bits
 
 	sample_rm_hps : (sample_plaintext_bits == sample_iid_bits + sample_fixed_type_bits) => 
-		[sample_plaintext_bits] -> (TernaryPoly n, TernaryPoly n)
+		[sample_plaintext_bits] -> (Polynomial (n - 2), Polynomial (n - 2))
 	sample_rm_hps rm_bits = (Ternary r_bits, Fixed_Type(m_bits))
 		where (r_bits, m_bits) = splitAt`{sample_iid_bits, sample_fixed_type_bits} rm_bits
 
-	sample_fg_hrss : [sample_key_bits] -> (TernaryPoly n, TernaryPoly n)
+	sample_fg_hrss : [sample_key_bits] -> (Polynomial (n - 1), Polynomial (n - 1))
 	sample_fg_hrss fg_bits = error "Not implemented"
 
-	sample_rm_hrss : [sample_plaintext_bits] -> (TernaryPoly n, TernaryPoly n)
+	sample_rm_hrss : [sample_plaintext_bits] -> (Polynomial (n - 1), Polynomial (n - 1))
 	sample_rm_hrss rm_bits = error "Not implemented"
 
-	Ternary : [sample_iid_bits] -> TernaryPoly n
-	Ternary bits = [
+	Ternary : [sample_iid_bits] -> Polynomial (n - 2)
+	Ternary bits = Polynomial { coeffs = [
 		sum [2 ^^ (2 * j * if bits @ (8 * i + j + 1) then 1 else 0) | j <- [0..7 : Integer]]
 		| i <- [0..n-2] 
-	] // TODO: Convert this output to canonical S3 form
+	] } // TODO: Convert this output to canonical S3 form
 
-	Fixed_Type : [sample_fixed_type_bits] -> TernaryPoly n
-	Fixed_Type bits = [(A @ i) % 4 | i <- [0..n-2 : Integer]] // convert to canonical S3 form?
+	Fixed_Type : [sample_fixed_type_bits] -> Polynomial (n - 2)
+	Fixed_Type bits = Polynomial { coeffs = [(A @ i) % 4 | i <- [0..n-2 : Integer]] } // convert to canonical S3 form?
 		where 
 			A = sort [(if i < `q/16 - 1 then 1 else if i < `q/8 - 2 then 0 else 2) *
 				sum [2 ^^ (2 + j) * (if bits @ (30 * i + 1 + j) then 1 else 0) 

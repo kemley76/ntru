@@ -2,7 +2,7 @@ module ntru where
 	import interface params
 	import module sampling
 	import interface submodule samp as S
-	import module polynomials { interface params } as Poly
+	import module rings { interface params } as Poly
 
 	// PASSIVELY SECURE DPKE
 	DPKE_Key_Pair : (S::sample_key_bits == sample_key_bits, S::n == n) =>
@@ -20,6 +20,9 @@ module ntru where
 
 	DPKE_Public_Key : Poly::S3 -> Poly::S3 -> (Poly::Rq, Poly::Sq)
 	DPKE_Public_Key f g = error "Not implemented"
+		//where 
+			//G = S3_mul 3 g
+			//v_0 = Sq(
 
 	DPKE_Encrypt : [dpke_public_key_bytes][8] -> [dpke_plaintext_bytes][8] -> [dpke_ciphertext_bytes][8]
 	DPKE_Encrypt packed_public_key packed_rm = error "Not implemented"

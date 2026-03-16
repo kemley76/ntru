@@ -1,0 +1,24 @@
+module polynomial where
+
+	// Represents a polynomial of degree n + 1
+	newtype Polynomial degree = {coeffs : [degree + 1]Integer}
+
+	// addition of two polynomials (of the same degree)
+	pAdd : {n} (fin n) => Polynomial n -> Polynomial n -> Polynomial n
+	pAdd p1 p2 = Polynomial { coeffs = p1.coeffs + p2.coeffs }
+
+	// Scalar multiplication of a polynomial (p * i) 
+	sMult : {n} (fin n) => Polynomial n -> Integer -> Polynomial n
+	sMult p i = Polynomial { coeffs = [i * a | a <- p.coeffs] }
+
+	// Multiplication of two polynomials
+	pMult : {n, m} (fin n, fin m) => Polynomial n -> Polynomial m -> Polynomial (n + m)
+	pMult p1 p2 = Polynomial { coeffs = 
+		foldl (+) [(sMult p2 a).coeffs # nZeros (`n - i) | a <- p1.coeffs | i <- [0..n]] 
+	}
+	
+	//multP : {n} (fin n) => Integer -> Polynomial n -> Polynomial n
+	//multP i p = multP p i
+
+	nZeros : {n} (fin n) => Integer -> [n]Integer
+	nZeros x = [0 | _ <- [0..x]]
