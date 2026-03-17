@@ -1,5 +1,7 @@
+import constants 
 def Sample_fg(fg_bits):
-	raise NotImplementedError("TODO!")
+	print(constants.sample_iid_bits)
+	
 
 def Sample_rm(rm_bits):
 	raise NotImplementedError("TODO!")
