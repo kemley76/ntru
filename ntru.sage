@@ -21,4 +21,11 @@ def test_encryption(seed):
 
     (private_key, public_key) = Key_Pair(full_seed)
     (shared_key, packed_ciphertext) = Encapsulate(public_key)
-    print(private_key)
+    p_key = [hex(byte_to_byte(b))[2:] for b in private_key]
+    print(''.join(p_key), "private key")
+
+def byte_to_byte(b):
+    value = 0
+    for (i, v) in enumerate(b):
+        value += v << i
+    return value

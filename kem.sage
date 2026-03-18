@@ -15,11 +15,13 @@ def Key_Pair(seed):
 
     (packed_dpke_private_key, packed_public_key) = DPKE_Key_Pair(fg_bits)
     packed_private_key = packed_dpke_private_key + bits_to_bytes(prf_key)
+    assert len(packed_private_key) == c.kem_private_key_bytes, "Private key is wrong length"
     return (packed_private_key, packed_public_key)
 
 def Encapsulate(packed_public_key):
     coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
     (r, m) = Sample_rm(coins)
+    #print(r, m)
     packed_rm = pack_S3(r) + pack_S3(m)
     shared_key = hash(packed_rm)
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
@@ -46,6 +48,11 @@ def Decapsulate(packed_private_key, packed_ciphertext):
 
 def hash(B):
     m = hashlib.sha3_256()
-    m.update(bytes(B))
+    m.update(bytes([byte_to_byte(b) for b in B]))
     return m.digest()
 
+def byte_to_byte(b):
+    value = 0
+    for (i, v) in enumerate(b):
+        value += v << i
+    return value

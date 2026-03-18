@@ -1,3 +1,4 @@
+from math import ceil 
 
 # converts some string of bits into an array of bit arrays. 
 # each bit array is length eight composed of 0 and 1 integers.
@@ -79,14 +80,13 @@ def bytes_to_bits(bytes_in, length):
 
 from math import log2
 import constants as c
-load('constants.sage')
 load('arithmetic.sage')
 
 logq = int(log2(c.q))
 
 def pack_Rq0(a):
-    assert a in P, "input is not a polynomial"
-    assert (a % phi_1) % c.q == 0, "input is not in Rq0" # I'm not sure if this is the way to check 
+    assert a in Z, "input is not a polynomial"
+    assert (a % PHI_1) % c.q == 0, "input is not in Rq0" # I'm not sure if this is the way to check 
     v = Rq(a)
     b = []
     i = 0
@@ -107,14 +107,13 @@ def unpack_Rq0(B):
     v = 0
     i = 0
     while i < c.n - 1:
-        print(i, logq)
         co = sum([2^j * b[i * logq + j] for j in range(logq)])
         v += v + co * x^i - co * x^(c.n - 1)
         i += 1
     return Rq(v)	
 
 def pack_Sq(a):
-    assert a in P, "input is not a polynomial"
+    assert a in Z, "input is not a polynomial"
     v = Rq(a)
     b = []
     i = 0
@@ -135,38 +134,46 @@ def unpack_Sq(B):
     v = 0
     i = 0
     while i < c.n - 1:
-        print(i, logq)
         co = sum([2^j * b[i * logq + j] for j in range(logq)])
         v += v + co * x^i - co * x^(c.n - 1)
         i += 1
     return Sq(v) # need to implement still...
 
 def pack_S3(a):
-    assert a in P, "input is not a polynomial"
-    v = Rq(a)
+    #print(a)
+    #assert a in Z, "input is not a polynomial"
+    v = S3_bar(a)
     b = []
     i = 0
     coeffs = v.list()
-    while i < c.n - 1:
+    #print(coeffs)
+    while i < ceil((c.n - 1) / 5) - 1:
         if i in coeffs:
-            b += int_to_bits(coeffs[i], logq)
+            co = [coeffs[5 * i + j] % 3 for j in range(5)]
+            b += int_to_bits(sum([3^j * co[j] for j in range(5)]), 8)
         else:
-            b += int_to_bits(0, logq)
+            b += int_to_bits(0, 8)
         i += 1
     result = bits_to_bytes(b)
-    assert len(result) == c.packed_sq_bytes
+    #print(len(result), c.packed_s3_bytes)
+    assert len(result) == c.packed_s3_bytes, "pack s3 has wrong length result"
     return result
 
 def unpack_S3(B):
-    numBytes = ((c.n-1) // 5) + 1
+    numBytes = ceil((c.n-1 / 5))
     bits = bytes_to_bits(B, numBytes)
     v = 0
     i = 0
     while i < numBytes:
         intVal = byte_to_int(bits[(i*8):(i*8+7)])
-        v.append(int_to_tern(intVal))
+        tern = [0] * 5
+        tempV = int_to_tern(intVal)
+        for vVal in range(len(tempV)):
+            tern[vVal] = tempV[vVal]
+        for coef in range(5):
+            v += tern[coef] * x^(i+coef)
         i += 1
-    return result
+    return S3(v)
 
 def int_to_bits(n, width):
 	return [(n >> i) & 1 for i in range(width)]
@@ -180,7 +187,7 @@ def byte_to_int(n):
 
 def int_to_tern(inputInt):
     if inputInt == 0:
-        return 0
+        return [0]
     remainders = []
     while inputInt:
         inputInt, remainder = divmod(inputInt, 3)

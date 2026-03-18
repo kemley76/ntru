@@ -109,7 +109,6 @@ def Sq_inverse(a):
         t *= 2
     
     b = Sq(v0)
-    print(a * b, Sq(a*b), "TESTING")
     assert Sq(a*b) == 1, "Sq(a*b) wasn't one..."
     return b
 

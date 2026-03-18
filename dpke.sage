@@ -31,8 +31,9 @@ def DPKE_Public_Key(f, g):
 #           packed_rm (byte array of length dpke_plaintext_bytes)
 # output: packed_ciphertext (byte array of length dpke_ciphertext_bytes)
 def DPKE_Encrypt(packed_public_key, packed_rm):
-    assert len(packed_public_key) == c.dpke_public_key_bytes
-    assert len(packed_rm) == c.dpke_plaintext_bytes
+    assert len(packed_public_key) == c.dpke_public_key_bytes, "packed public key is wrong size"
+    print(len(packed_rm), c.dpke_plaintext_bytes)
+    assert len(packed_rm) == c.dpke_plaintext_bytes, "packed_rm is wrong size"
 
     packed_r = packed_rm[:c.packed_s3_bytes]
     packed_m = packed_rm[c.packed_s3_bytes:]
