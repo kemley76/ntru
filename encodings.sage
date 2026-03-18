@@ -86,31 +86,24 @@ logq = int(log2(c.q))
 
 def pack_Rq0(a):
     assert a in Z, "input is not a polynomial"
-    assert (a % PHI_1) % c.q == 0, "input is not in Rq0" # I'm not sure if this is the way to check 
-    v = Rq(a)
+    v = Rq_bar(a)
     b = []
-    i = 0
     coeffs = v.list()
-    while i < c.n - 1:
-        if i < len(coeffs):
-            b += int_to_bits(coeffs[i], logq)
-        else:
-            b += int_to_bits(0, logq)
-        i += 1
+    coeffs = coeffs + [0] * (c.n - len(coeffs)) # pad to have n coeficients
+    for coeff in coeffs[:-1]:
+        b += (coeff % c.q).digits(2, padto=logq)
     result = bits_to_bytes(b)
-    assert len(result) == c.packed_rq0_bytes
+    assert len(result) == c.packed_rq0_bytes, "result is wrong length"
     return result
 
 def unpack_Rq0(B):
     assert len(B) == c.packed_rq0_bytes, "input is wrong length"
-    b = bytes_to_bits(B, (c.n - 1) * logq)
-    v = 0
-    i = 0
-    while i < c.n - 1:
-        co = sum([2^j * b[i * logq + j] for j in range(logq)])
-        v += v + co * x^i - co * x^(c.n - 1)
-        i += 1
-    return Rq(v)	
+    coeffs = []
+    bits = bytes_to_bits(B, (c.n - 1) * logq)
+
+    for i in range(0, (c.n - 1) * logq, logq):
+        coeffs.append(ZZ(bits[i:i+logq], 2))
+    return Rq_bar(Z(coeffs))	
 
 def pack_Sq(a):
     assert a in Z, "input is not a polynomial"
