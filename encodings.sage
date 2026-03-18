@@ -140,40 +140,25 @@ def unpack_Sq(B):
     return Sq(v) # need to implement still...
 
 def pack_S3(a):
-    #print(a)
-    #assert a in Z, "input is not a polynomial"
     v = S3_bar(a)
     b = []
     i = 0
     coeffs = v.list()
-    #print(coeffs)
+    coeffs = coeffs + [0] * (c.n - 1 - len(coeffs)) # pad to have n - 1 coefficients
     while i < ceil((c.n - 1) / 5):
-        if i * 5 < len(coeffs):
-            co = [coeffs[5 * i + j] % 3 for j in range(5)]
-            b += int_to_bits(sum([3^j * co[j] for j in range(5)]), 8)
-        else:
-            b += int_to_bits(0, 8)
+        co = [x % 3 for x in coeffs[5 * i:5 * i + 5]]
+        b += ZZ(co, 3).digits(2, padto=8)
         i += 1
     result = bits_to_bytes(b)
-    #print(len(result), c.packed_s3_bytes)
     assert len(result) == c.packed_s3_bytes, "pack s3 has wrong length result"
     return result
 
 def unpack_S3(B):
-    numBytes = ceil((c.n-1 / 5))
-    bits = bytes_to_bits(B, numBytes)
-    v = 0
-    i = 0
-    while i < numBytes:
-        intVal = byte_to_int(bits[(i*8):(i*8+7)])
-        tern = [0] * 5
-        tempV = int_to_tern(intVal)
-        for vVal in range(len(tempV)):
-            tern[vVal] = tempV[vVal]
-        for coef in range(5):
-            v += tern[coef] * x^(i+coef)
-        i += 1
-    return S3(v)
+    coeffs = []
+    for byte in B:
+        byte.reverse()
+        coeffs += ZZ(byte, 2).digits(3, padto=5)
+    return S3_bar(Z(coeffs))
 
 def int_to_bits(n, width):
 	return [(n >> i) & 1 for i in range(width)]
