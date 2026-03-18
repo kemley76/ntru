@@ -8,7 +8,7 @@ load('encodings.sage')
 #           packed_public_key (byte array of length dpke_public_key_bytes)
 def DPKE_Key_Pair(coins):
     assert len(coins) == c.sample_key_bits
-    (f,g) = Sapmle_fg(coins)
+    (f,g) = Sample_fg(coins)
     f_p = S3_inverse(f)
     (h, h_q) = DPKE_Public_Key(f, g)
     packed_private_key = pack_S3(f) + pack_S3(f_p) + pack_Sq(h_q)

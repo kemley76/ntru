@@ -29,9 +29,9 @@ def Rq_bar(a):
 def S2(a):
     P2.<x> = PolynomialRing(GF(2))
     Phi_n = P2.cyclotomic_polynomial(constants.n)
-    S2 = P2.quotient(Phi_n)
+    S2_out = P2.quotient(Phi_n)
 
-    return S2(a)
+    return S2_out(a)
 
 # input: a (polynomial in ring Z[x])
 # output: b (polynomial in Z[x]/(3,Φ_n) that is not normative)
@@ -104,14 +104,15 @@ def S3_inverse(a):
 # Input: a (polynomial)
 # Output: b (polynomial)
 def Sq_inverse(a):
-    v0 = S2_bar(S2_inverse(a))
+    v0 = S2(S2_inverse(a))
     t = 1
-    stop = log(q)
+    stop = log2(constants.q)
     while t < stop:
         v0 = Sq(v0 * (2 - a * v0))
         t *= 2
     
     b = Sq(v0)
+    print(a * b, Sq(a*b), "TESTING")
     assert Sq(a*b) == 1, "Sq(a*b) wasn't one..."
     return b
 

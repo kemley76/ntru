@@ -6,9 +6,10 @@ sha3_256 = hashlib.sha3_256()
 
 load('dpke.sage')
 load('encodings.sage')
+load('sampling.sage')
 
 def Key_Pair(seed):
-    assert len(seed) == c.sample_key_bits + c.prf_key_bits
+    assert len(seed) == c.sample_key_bits + c.prf_key_bits, "invalid seed length"
     fg_bits = seed[:c.sample_key_bits]
     prf_key = seed[c.prf_key_bits:]
 
