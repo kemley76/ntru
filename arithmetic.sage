@@ -1,14 +1,70 @@
+import constants
+
+# From the original definitions:
+Z.<x> = PolynomialRing(ZZ)
+PHI_1 = Z.cyclotomic_polynomial(1)
+PHI_N = Z.cyclotomic_polynomial(constants.n)
+R = Z.quotient(PHI_1*PHI_N)
+S = Z.quotient(PHI_N)
+
+# input: a (polynomial in ring Z[x])
+# output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n) that is not normative)
+def Rq(a):
+    ideal = R(a).lift()
+    return Z([c % constants.q for c in ideal.list()])
+
+# input: a (polynomial in ring Z[x])
+# output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n) that is canonical)
+def Rq_bar(a):
+    ideal = R(a).lift()
+    
+    def canon(c):
+        c_mod = c % constants.q
+        return int(c_mod - constants.q if c_mod >= constants.q / 2 else c_mod)
+    
+    return Z([canon(c) for c in ideal.list()])
+
+# input: a (polynomial in ring Z[x])
+# output: b (polynomial in ring Z[x]/(2,Φ_n) that is not normative)
+def S2(a):
+    P2.<x> = PolynomialRing(GF(2))
+    Phi_n = P2.cyclotomic_polynomial(constants.n)
+    S2 = P2.quotient(Phi_n)
+
+    return S2(a)
+
 # compute inverses in S/2
 # (described here: http://cryptojedi.org/papers/#ntrukem)
-def S2_inverse():
-    # unimplemented
-    raise NotImplementedError("This function has not been implemented yet.")
+# input: a (assuming a is a polynomial)
+# output: b (polynomial)
+def S2_inverse(a):
+    R2.<x> = PolynomialRing(GF(2))
+    Phi_n = cyclotomic_polynomial(constants.n)
+    S2 = R2.quotient(Phi_n)
+
+    in_poly = S2(a) #currently assuming a is a polynomial
+
+    out_poly = ~in_poly
+
+    # ... some other function that returns it in a certain form?
+    b = out_poly
+
+    return b
 
 # compute inverses in S/3
 # (described here: http://cryptojedi.org/papers/#ntrukem)
-def S3_inverse():
-    # unimplemented
-    raise NotImplementedError("This function has not been implemented yet.")
+# input: a (binary lst? that represents the polynomial)
+# output: b (binary lst? that represents the output)
+def S3_inverse(a):
+    R3.<x> = PolynomialRing(GF(3))
+    Phi_n = cyclotomic_polynomial(constants.n)
+    S3 = R3.quotient(Phi_n)
+
+    in_poly = S3(a)
+    out_poly = ~in_poly
+
+    b = out_poly
+    return b
 
 # Input: a (polynomial)
 # Output: b (polynomial)
