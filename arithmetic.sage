@@ -25,13 +25,47 @@ def Rq_bar(a):
     return Z([canon(c) for c in ideal.list()])
 
 # input: a (polynomial in ring Z[x])
-# output: b (polynomial in ring Z[x]/(2,Φ_n) that is not normative)
+# output: b (polynomial in ring Z[x]/(2,Φ_n) (both canonical and not normative))
 def S2(a):
     P2.<x> = PolynomialRing(GF(2))
     Phi_n = P2.cyclotomic_polynomial(constants.n)
     S2 = P2.quotient(Phi_n)
 
     return S2(a)
+
+# input: a (polynomial in ring Z[x])
+# output: b (polynomial in Z[x]/(3,Φ_n) that is not normative)
+def S3(a):
+    ideal = S(a).lift()
+    return Z([c % 3 for c in ideal.list()])
+
+# input: a (polynomial in ring Z[x])
+# output: b (polynomial in Z[x]/(3,Φ_n) that is canonical)
+def S3_bar(a):
+    ideal = S(a).lift()
+
+    def canon(c):
+        c_mod = c % 3
+        return int(c_mod - 3 if c_mod > 1 else c_mod)
+    
+    return Z([canon(c) for c in ideal.list()])
+
+# input: a (polynomial in ring Z[x])
+# output: b (polynomial in ring Z[x]/(q,Φ_n) that is not normative)
+def Sq(a):
+    ideal = S(a).lift()
+    return Z([c % constants.q for c in ideal.list()])
+
+# input: a (polynomial in ring Z[x])
+# output: b (polynomial in ring Z[x]/(q,Φ_n) that is canonical)
+def Sq_bar(a):
+    ideal = S(a).lift()
+
+    def canon(c):
+        c_mod = c % constants.q
+        return int(c_mod - constants.q if c_mod >= constants.q / 2 else c_mod)
+    
+    return Z([canon(c) for c in ideal.list()])
 
 # compute inverses in S/2
 # (described here: http://cryptojedi.org/papers/#ntrukem)
