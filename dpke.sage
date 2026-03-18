@@ -13,6 +13,8 @@ def DPKE_Key_Pair(coins):
     (h, h_q) = DPKE_Public_Key(f, g)
     packed_private_key = pack_S3(f) + pack_S3(f_p) + pack_Sq(h_q)
     packed_public_key = pack_Rq0(h)
+    assert len(packed_private_key) == c.dpke_private_key_bytes, "DPKE private key is wrong length"
+    assert len(packed_public_key) == c.dpke_public_key_bytes, "DPKE public key is wrong length"
     return (packed_private_key, packed_public_key)
 
 # input: f (polynomial in lattice{f})
@@ -55,7 +57,7 @@ def DPKE_Decrypt(packed_private_key, packed_ciphertext):
     packed_f = packed_private_key[:c.packed_s3_bytes]
     packed_fp = packed_private_key[c.packed_s3_bytes:c.packed_s3_bytes * 2] 
     packed_hq = packed_private_key[c.packed_s3_bytes * 2:]
-    assert len(packed_hq) == c.packed_s3_bytes
+    assert len(packed_hq) == c.packed_sq_bytes, "Invalid packed hq length"
     cipher = unpack_Rq0(packed_ciphertext)
     f = S3(unpack_S3(packed_f))
     f_p = unpack_S3(packed_fp)
@@ -63,7 +65,7 @@ def DPKE_Decrypt(packed_private_key, packed_ciphertext):
     v_1 = Rq(cipher * f)
     m_0 = S3(v_1 * f_p)
     m_1 = Lift(m_0)
-    r = Sq((c - m_1) * h_q)
+    r = Sq((cipher - m_1) * h_q)
     packed_rm = pack_S3(r) + pack_S3(m_0)
     # TODO: Figure out how to check if r is in L_r and m_0 is in L_m
     return (packed_rm, 0)
