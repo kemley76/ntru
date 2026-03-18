@@ -20,7 +20,7 @@ def Encapsulate(packed_public_key):
     coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
     (r, m) = Sample_rm(coins)
     packed_rm = pack_S3(r) + pack_S3(m)
-    shared_key = sha3_256(bytes_to_bits(packed_rm, 8 * c.dpke_plaintext_bytes))
+    shared_key = hash(packed_rm)
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
     return (shared_key, packed_ciphertext)
 
@@ -36,10 +36,15 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     #assert len(packed_hq) == c.packed_s3_bytes
 
     (packed_rm, fail) = DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext)
-    shared_key = sha3_256(bytes_to_bits(packed_rm, 8 * c.dpke_plaintext_bytes))
-    random_key = sha3_256(bytes_to_bits(prf_key, c.prf_key_bits) + 
-                          bytes_to_bits(packed_ciphertext, 8*c.kem_ciphertext_bytes))
+    shared_key = hash(packed_rm)
+    random_key = hash(prf_key + packed_ciphertext)
     if fail:
         return random_key
     else: 
         return shared_key
+
+def hash(B):
+    m = hashlib.sha3_256()
+    m.update(bytes(B))
+    return m.digest()
+
