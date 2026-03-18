@@ -6,7 +6,7 @@ from math import ceil
 # [[b8 b7 b6 b5 b4 b3 b2 b1] [0 0 0 0 0 0 0 b9]]
 def bits_to_bytes(bits_in):
     numBits = len(bits_in)
-    numLoops = (numBits // 8) + 1
+    numLoops = ceil(numBits / 8)
     bytes_out = []
     for loop in range(0, numLoops):
         curByte = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -92,7 +92,7 @@ def pack_Rq0(a):
     i = 0
     coeffs = v.list()
     while i < c.n - 1:
-        if i in coeffs:
+        if i < len(coeffs):
             b += int_to_bits(coeffs[i], logq)
         else:
             b += int_to_bits(0, logq)
@@ -119,7 +119,7 @@ def pack_Sq(a):
     i = 0
     coeffs = v.list()
     while i < c.n - 1:
-        if i in coeffs:
+        if i < len(coeffs):
             b += int_to_bits(coeffs[i], logq)
         else:
             b += int_to_bits(0, logq)
@@ -147,8 +147,8 @@ def pack_S3(a):
     i = 0
     coeffs = v.list()
     #print(coeffs)
-    while i < ceil((c.n - 1) / 5) - 1:
-        if i in coeffs:
+    while i < ceil((c.n - 1) / 5):
+        if i * 5 < len(coeffs):
             co = [coeffs[5 * i + j] % 3 for j in range(5)]
             b += int_to_bits(sum([3^j * co[j] for j in range(5)]), 8)
         else:
