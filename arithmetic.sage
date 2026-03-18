@@ -27,11 +27,8 @@ def Rq_bar(a):
 # input: a (polynomial in ring Z[x])
 # output: b (polynomial in ring Z[x]/(2,Φ_n) (both canonical and not normative))
 def S2(a):
-    P2.<x> = PolynomialRing(GF(2))
-    Phi_n = P2.cyclotomic_polynomial(constants.n)
-    S2_out = P2.quotient(Phi_n)
-
-    return S2_out(a)
+    ideal = S(a).lift()
+    return Z([c % 2 for c in ideal.list()])
 
 # input: a (polynomial in ring Z[x])
 # output: b (polynomial in Z[x]/(3,Φ_n) that is not normative)
