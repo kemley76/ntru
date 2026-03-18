@@ -1,6 +1,6 @@
 import constants as c
 load('constants.sage')
-load('rings.sage')
+load('arithmetic.sage')
 
 def Sample_fg(fg_bits):
     assert len(fg_bits) == c.sample_iid_bits * 2
@@ -46,7 +46,6 @@ def Ternary_Plus(b):
         coeffs[i] = s * coeffs[i] 
         i += 2
     result = sum([a * x^i for (i, a) in enumerate(coeffs)])
-    # Check non-negative correlation property 
 
     assert correlation(result.list()) >= 0
     return S3(result)
@@ -54,5 +53,5 @@ def Ternary_Plus(b):
 def Fixed_Type(b):
 	raise NotImplementedError("TODO!")
 
-def correlation(coeffs):
+def correlation(coeffs): # Used to check the non-negative correlation property
     return sum([coeffs[i] * coeffs[i + 1] for i in range(0, len(coeffs) - 1)])
