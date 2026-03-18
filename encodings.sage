@@ -163,7 +163,7 @@ def unpack_S3(B):
     v = 0
     i = 0
     while i < numBytes:
-        intVal = bits_to_int(bits[(i*8):(i*8+7)])
+        intVal = byte_to_int(bits[(i*8):(i*8+7)])
         v.append(int_to_tern(intVal))
         i += 1
     return result
@@ -171,8 +171,9 @@ def unpack_S3(B):
 def int_to_bits(n, width):
 	return [(n >> i) & 1 for i in range(width)]
 
-def bits_to_int(n):
+def byte_to_int(n):
     acumInt = 0
+    n.reverse()
     for loop in range(0, len(n)):
         acumInt += pow(2,loop)*n[loop]
     return acumInt
