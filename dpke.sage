@@ -38,11 +38,12 @@ def DPKE_Encrypt(packed_public_key, packed_rm):
     packed_m = packed_rm[c.packed_s3_bytes:]
     assert len(packed_m) == c.packed_s3_bytes
 
+    r = S3(unpack_S3(packed_r))
     m_0 = unpack_S3(packed_m)
-    m_1 = Lift(m_1)
+    m_1 = Lift(m_0)
     h = unpack_Rq0(packed_public_key)
-    cipher = Rq(r * h + m1)
-    packed_ciphertext = pack_R0(cipher)
+    cipher = Rq(r * h + m_1)
+    packed_ciphertext = pack_Rq0(cipher)
     return packed_ciphertext
 
 # input: packed_private_key (byte array of length dpke_private_key_bytes)
