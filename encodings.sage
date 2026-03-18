@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # converts some string of bits into an array of bit arrays. 
 # each bit array is length eight composed of 0 and 1 integers.
 # the order follows [b1 b2 b3 b4 b5 b6 b7 b8 b9] into 
@@ -20,7 +20,7 @@ def bits_to_bytes(bits_in):
 # byte arrays are flipped then appended to an empty bit array
 # the order follows [[b8 b7 b6 b5 b4 b3 b2 b1] [0 0 0 0 0 0 0 b9]] 
 # into [b1 b2 b3 b4 b5 b6 b7 b8 b9]
-def bytes_to_bits(bytes_in):
+def bytes_to_bits(bytes_in, length):
     bits_out = []
     for byte in bytes_in:
         byte.reverse()
@@ -81,7 +81,6 @@ from math import log2
 import constants as c
 load('constants.sage')
 load('arithmetic.sage')
-load('encodings.sage')
 
 logq = int(log2(c.q))
 
@@ -158,8 +157,31 @@ def pack_S3(a):
     assert len(result) == c.packed_sq_bytes
     return result
 
-def unpack_S3(a):
-	raise NotImplementedError("TODO!")
+def unpack_S3(B):
+    numBytes = ((c.n-1) // 5) + 1
+    bits = bytes_to_bits(B, numBytes)
+    v = 0
+    i = 0
+    while i < numBytes:
+        intVal = bits_to_int(bits[(i*8):(i*8+7)])
+        v.append(int_to_tern(intVal))
+        i += 1
+    return result
 
 def int_to_bits(n, width):
 	return [(n >> i) & 1 for i in range(width)]
+
+def bits_to_int(n):
+    acumInt = 0
+    for loop in range(0, len(n)):
+        acumInt += pow(2,loop)*n[loop]
+    return acumInt
+
+def int_to_tern(inputInt):
+    if inputInt == 0:
+        return 0
+    remainders = []
+    while inputInt:
+        inputInt, remainder = divmod(inputInt, 3)
+        remainders.append(remainder)
+    return remainders
