@@ -18,3 +18,4 @@ kem_public_key_bytes = 1138
 kem_private_key_bytes = 1450
 kem_ciphertext_bytes = 1138
 kem_shared_key_bits = 256
+prf_key_bits = 256

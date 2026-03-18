@@ -100,16 +100,23 @@ def S3_inverse(a):
     b = out_poly
     return b
 
+# Algorithm is straight from the given pdf (1.9.2)
 # Input: a (polynomial)
 # Output: b (polynomial)
 def Sq_inverse(a):
-    # unimplemented
-    raise NotImplementedError("This function has not been implemented yet.")
-    # should return a polynomial b (that satisfies Sq(a*b)=1)
+    v0 = S2_bar(S2_inverse(a))
+    t = 1
+    stop = log(q)
+    while t < stop:
+        v0 = Sq(v0 * (2 - a * v0))
+        t *= 2
+    
+    b = Sq(v0)
+    assert Sq(a*b) == 1, "Sq(a*b) wasn't one..."
+    return b
 
+# Algorithm 
 # Input: m (polynomial)
 # Output: (Φ_1 * S3(m/Φ_1)) (polynomial) HRSS
 def Lift(m):
-    # unimplemented
-    raise NotImplementedError("This function has not been implemented yet.")
-    # should return (Φ_1 * S3(m/Φ_1))
+    return (PHI_1 * S3_bar(m // PHI_1))
