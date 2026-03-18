@@ -1,4 +1,8 @@
 from math import ceil 
+from math import log2
+import constants as c
+load('arithmetic.sage')
+logq = int(log2(c.q))
 
 # converts some string of bits into an array of bit arrays. 
 # each bit array is length eight composed of 0 and 1 integers.
@@ -28,61 +32,6 @@ def bytes_to_bits(bytes_in, length):
         for bit in byte:
             bits_out.append(bit)
     return bits_out
-
-# gets the coefficients of some input polynomial
-# loops through to convert each input coefficient into a bit string
-# normalizes the length of each bit string to log(q)
-# the last coefficient v_n-1 isn't encoded
-# once all normalized length bitstreams are assembled they're given
-# to bits_to_bytes
-# def pack_Rq0(polyA):
-#     v = Rq(polyA)
-#     # logq = 9
-#     v = [141, 255, 177, 61, 24, 19]
-#     n_1 = len(polyA) - 1
-#     # n_1 = 5
-#     bits = []
-#     for loop in range(0, n_1):
-#         simpleBit = [0] * (logq)
-#         # note that this works without the mod but I'll need to update this
-#         # in post to reference the right q
-#         numBin = list(bin(v[loop] % q)[2:])
-#         for dig in range(0,len(numBin)):
-#             simpleBit[dig] = numBin[dig]
-#         for dig in range(0,len(simpleBit)):
-#             bits.append(simpleBit[dig])
-#     return bits_to_bytes(bits)
-
-# def unpack_Rq0(bytes_in):
-#     return poly_coef
-
-#     ## I need to write the KEM file.
-    
-# # this is pack rq0 but with Sq instead of Rq on the first
-# # line after the function def
-# def pack_Sq0(polyA):
-#     v = Sq(polyA)
-#     # logq = 9
-#     v = [141, 255, 177, 61, 24, 19]
-#     n_1 = len(polyA) - 1
-#     # n_1 = 5
-#     bits = []
-#     for loop in range(0, n_1):
-#         simpleBit = [0] * (logq)
-#         # note that this works without the mod but I'll need to update this
-#         # in post to reference the right q
-#         numBin = list(bin(v[loop] % q)[2:])
-#         for dig in range(0,len(numBin)):
-#             simpleBit[dig] = numBin[dig]
-#         for dig in range(0,len(simpleBit)):
-#             bits.append(simpleBit[dig])
-#     return bits_to_bytes(bits)
-
-from math import log2
-import constants as c
-load('arithmetic.sage')
-
-logq = int(log2(c.q))
 
 def pack_Rq0(a):
     assert a in Z, "input is not a polynomial"
@@ -146,22 +95,3 @@ def unpack_S3(B):
         byte.reverse()
         coeffs += ZZ(byte, 2).digits(3, padto=5)
     return S3_bar(Z(coeffs))
-
-def int_to_bits(n, width):
-	return [(n >> i) & 1 for i in range(width)]
-
-def byte_to_int(n):
-    acumInt = 0
-    n.reverse()
-    for loop in range(0, len(n)):
-        acumInt += pow(2,loop)*n[loop]
-    return acumInt
-
-def int_to_tern(inputInt):
-    if inputInt == 0:
-        return [0]
-    remainders = []
-    while inputInt:
-        inputInt, remainder = divmod(inputInt, 3)
-        remainders.append(remainder)
-    return remainders
