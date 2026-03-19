@@ -29,6 +29,7 @@ def Encapsulate(packed_public_key):
     packed_rm = pack_S3(r) + pack_S3(m)
     # print("Encapsulate:", packed_rm)
     # print(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
+    packed_rm 
     bitStringOut = bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes)
     shared_key = hash(bitStringOut)
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
@@ -71,21 +72,21 @@ def Decapsulate(packed_private_key, packed_ciphertext):
 
 def hash(B):
     m = hashlib.sha3_256()
-    # print([byte_to_byte(b) for b in B])
-    # i=0
-    # while i*8 < len(B):
-    #     # print(ZZ(B[i*8:i*8+8], 2),' ', ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'), '\n')
-    #     val = byte_to_byte(B[i*8:i*8+8])
-    #     m.update(val.to_bytes(1,byteorder='little'))
-    #     i+=1
-    # print(i*8, len(B))
-    # m.update(bytes_to_bits(B))
-    # m.update(0.to_bytes(1,byteorder='big'))
-    m.update(bytes(B))
+
+    byte_array = bytearray()
+    for i in range(0, len(B), 8):
+        byte_val = 0
+        for bit in B[i:i+8]:
+            byte_val = (byte_val << 1) | bit
+        byte_array.append(byte_val)
+        # print("{:08b}".format(byte_val), B[i:i+8])
+    m.update(byte_array)
     return m.digest()
 
-def byte_to_byte(b):
+def byte_to_hash_byte(b):
     value = 0
-    for (i, v) in enumerate(b):
+    useB = copy.deepcopy(b)
+    useB.reverse()
+    for (i, v) in enumerate(useB):
         value += v << i
     return value
