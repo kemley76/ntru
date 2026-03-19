@@ -29,9 +29,10 @@ def Encapsulate(packed_public_key):
     packed_rm = pack_S3(r) + pack_S3(m)
     # print("Encapsulate:", packed_rm)
     # print(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
-    shared_key = hash(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
+    bitStringOut = bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes)
+    shared_key = hash(bitStringOut)
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
-    return (shared_key, packed_ciphertext)
+    return (shared_key, packed_ciphertext, m.list())
 
 def Decapsulate(packed_private_key, packed_ciphertext):
     assert len(packed_private_key) == c.kem_private_key_bytes, "Invalid packed private key length"
@@ -48,7 +49,7 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     packed_hq = packed_private_key[c.packed_s3_bytes * 2:]
     #assert len(packed_hq) == c.packed_s3_bytes
 
-    (packed_rm, fail) = DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext)
+    (packed_rm, fail, packed_m) = DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext)
     # print("Decapsulate:", packed_rm)
     
     decapBits = bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes)
@@ -62,23 +63,25 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     random_key = hash(bytes_to_bits(prf_key, c.prf_key_bits) +  bytes_to_bits(packed_ciphertext, 8*c.kem_ciphertext_bytes) )
     if fail:
         # print("failed lol")
-        return random_key
+        return (random_key, packed_m)
     else: 
-        return shared_key
+        return (shared_key, packed_m)
 
 
 
 def hash(B):
     m = hashlib.sha3_256()
     # print([byte_to_byte(b) for b in B])
-    i=0
-    while i*8 < len(B):
-        # print(ZZ(B[i*8:i*8+8], 2),' ', ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'), '\n')
-        m.update(ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'))
-        i+=1
+    # i=0
+    # while i*8 < len(B):
+    #     # print(ZZ(B[i*8:i*8+8], 2),' ', ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'), '\n')
+    #     val = byte_to_byte(B[i*8:i*8+8])
+    #     m.update(val.to_bytes(1,byteorder='little'))
+    #     i+=1
     # print(i*8, len(B))
     # m.update(bytes_to_bits(B))
     # m.update(0.to_bytes(1,byteorder='big'))
+    m.update(bytes(B))
     return m.digest()
 
 def byte_to_byte(b):

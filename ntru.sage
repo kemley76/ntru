@@ -19,8 +19,12 @@ def test_encryption(seed):
 
 
     (private_key, public_key) = Key_Pair(full_seed)
-    (ss_encap, cipher) = Encapsulate(public_key)
-    ss_decap = Decapsulate(private_key, cipher)
+    (ss_encap, cipher, bitStringOut) = Encapsulate(public_key)
+    (ss_decap, otherBitString) = Decapsulate(private_key, cipher)
+    # print('Entries of prehash bitstreams that are different for this run: ')
+    # for entry in range(len(bitStringOut)):
+    #     if bitStringOut[entry] != otherBitString[entry]:
+    #         print(entry, '\n', bitStringOut[entry], '\n', otherBitString[entry], '\n\n')
     #p_key = 
 
 

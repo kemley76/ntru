@@ -76,5 +76,11 @@ def DPKE_Decrypt(packed_private_key, packed_ciphertext):
     m_1 = Lift(m_0)
     r = Sq_bar((cipher - m_1) * h_q)
     packed_rm = pack_S3(r) + pack_S3(m_0)
-    # TODO: Figure out how to check if r is in L_r and m_0 is in L_m
-    return (packed_rm, 0)
+    fail = 0
+    # L_r == L_m == T in NTRUhrss. T is the set of polynomials with ternary coefficients with degree at most n-2
+    if ((r.degree() > c.n - 2) or (max(r.coefficients()) > 1) or (min(r.coefficients()) < -1)): 
+        fail = 1
+    if ((m_0.degree() > c.n - 2) or (max(m_0.coefficients()) > 1) or (min(m_0.coefficients()) < -1)):
+        fail = 1
+    # print('r max, min degree: ', max(r.coefficients()), min(r.coefficients()), r.degree(), 'm_0 max, min degree: ', max(m_0.coefficients()), min(m_0.coefficients()), m_0.degree())
+    return (packed_rm, fail, m_0.list())
