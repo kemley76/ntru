@@ -26,6 +26,8 @@ def DPKE_Key_Pair(coins):
 # output: h (polynomial that satisfies Rq(h · f) = 3 · g)
 #           h_q (polynomial that satisfies Sq(h · hq) = 1)
 def DPKE_Public_Key(f, g):
+ 	# reference implementation does G = 3*(x-1)*g for some reason
+    #G = 3*(x-1)*g 
     G = 3 * g
     v_0 = Sq(G * f)
     v_1 = Sq_inverse(v_0) 
