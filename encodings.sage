@@ -35,6 +35,9 @@ def bytes_to_bits(bytes_in, length):
 
 def pack_Rq0(a):
     assert a in Z, "input is not a polynomial"
+    remainder = a % PHI_1
+    assert all(coeff % c.q == 0 for coeff in remainder.list()), "a is not equiv to zero"
+    
     v = Rq_bar(a)
     b = []
     coeffs = v.list()
