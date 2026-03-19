@@ -16,7 +16,7 @@ def bits_to_bytes(bits_in):
         curByte = [0, 0, 0, 0, 0, 0, 0, 0]
         for bit in range(0, 8):
             if (bit+(8*loop)) < numBits:
-                curByte[bit] = bits_in[bit+8*loop]
+                curByte[bit] = int(bits_in[bit+8*loop])
         curByte.reverse()
         bytes_out.append(curByte)
     return bytes_out
@@ -30,7 +30,7 @@ def bytes_to_bits(bytes_in, length):
     for byte in bytes_in:
         byte.reverse()
         for bit in byte:
-            bits_out.append(bit)
+            bits_out.append(int(bit))
     return bits_out
 
 def pack_Rq0(a):
