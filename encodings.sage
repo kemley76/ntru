@@ -85,7 +85,7 @@ def unpack_Sq(B):
 
     for i in range(0, (c.n - 1) * logq, logq):
         coeffs.append(ZZ(bits[i:i+logq], 2))
-    return Sq_bar(Z(coeffs))
+    return Sq(Z(coeffs))
 
 def pack_S3(a):
     v = S3_bar(a)
@@ -106,4 +106,4 @@ def unpack_S3(B):
     for byte in B:
         byte.reverse()
         coeffs += ZZ(byte, 2).digits(3, padto=5)
-    return S3_bar(Z(coeffs))
+    return S3(Z(coeffs))

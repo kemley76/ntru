@@ -27,6 +27,11 @@ def DPKE_Public_Key(f, g):
     v_1 = Sq_inverse(v_0) 
     h = Rq(v_1 * G * G)
     h_q = Rq(v_1 * f * f) 
+
+    # assertion statements
+    assert Rq_bar(h*f) == 3 * g, "polynomial f fails needed assumption"
+    assert Sq_bar(h*h_q) == 1, "polynomials h and h_q fails needed assumption"
+
     return (h, h_q)
 
 # input: packed_public_key (byte array of length dpke_public_key_bytes)
@@ -41,7 +46,7 @@ def DPKE_Encrypt(packed_public_key, packed_rm):
     packed_m = packed_rm[c.packed_s3_bytes:]
     assert len(packed_m) == c.packed_s3_bytes
 
-    r = S3(unpack_S3(packed_r))
+    r = S3_bar(unpack_S3(packed_r))
     m_0 = unpack_S3(packed_m)
     m_1 = Lift(m_0)
     h = unpack_Rq0(packed_public_key)
@@ -59,13 +64,13 @@ def DPKE_Decrypt(packed_private_key, packed_ciphertext):
     packed_hq = packed_private_key[c.packed_s3_bytes * 2:]
     assert len(packed_hq) == c.packed_sq_bytes, "Invalid packed hq length"
     cipher = unpack_Rq0(packed_ciphertext)
-    f = S3(unpack_S3(packed_f))
+    f = S3_bar(unpack_S3(packed_f))
     f_p = unpack_S3(packed_fp)
     h_q = unpack_Sq(packed_hq)
-    v_1 = Rq(cipher * f)
-    m_0 = S3(v_1 * f_p)
+    v_1 = Rq_bar(cipher * f)
+    m_0 = S3_bar(v_1 * f_p)
     m_1 = Lift(m_0)
-    r = Sq((cipher - m_1) * h_q)
+    r = Sq_bar((cipher - m_1) * h_q)
     packed_rm = pack_S3(r) + pack_S3(m_0)
     # TODO: Figure out how to check if r is in L_r and m_0 is in L_m
     return (packed_rm, 0)

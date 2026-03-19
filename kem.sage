@@ -23,7 +23,11 @@ def Key_Pair(seed):
 def Encapsulate(packed_public_key):
     coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
     (r, m) = Sample_rm(coins)
+    print("r:", r)
+    print("")
+    print("m:", m)
     packed_rm = pack_S3(r) + pack_S3(m)
+    #print("Encapsulate:", packed_rm)
     shared_key = hash(packed_rm)
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
     return (shared_key, packed_ciphertext)
@@ -43,9 +47,11 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     #assert len(packed_hq) == c.packed_s3_bytes
 
     (packed_rm, fail) = DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext)
+    #print("Decapsulate:", packed_rm)
     shared_key = hash(packed_rm)
     random_key = hash(prf_key + packed_ciphertext)
     if fail:
+        print("failed lol")
         return random_key
     else: 
         return shared_key
