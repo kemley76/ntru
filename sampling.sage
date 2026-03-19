@@ -30,24 +30,25 @@ def Ternary(b):
 	return S3_bar(v)
 
 def Ternary_Plus(b):
-	assert len(b) == c.sample_iid_bits, "input is not correct length"
-	v = Ternary(b)
-	coeffs = v.list()
-	coeffs = [0] * (c.n - len(coeffs)) + coeffs
-	assert len(coeffs) == c.n
-	t = correlation(coeffs)
-	assert -c.n < t and t < c.n, "correlation is outside expected range"
-	s = 1
-	if t < 0:
-		s = -1
-	i = 0
-	while i < c.n - 1:
-		coeffs[i] = s * coeffs[i] 
-		i += 2
-	result = sum([a * x^i for (i, a) in enumerate(coeffs)])
+    assert len(b) == c.sample_iid_bits, "input is not correct length"
+    v = Ternary(b)
+    print("TERNARY", v)
+    coeffs = v.list()
+    coeffs = coeffs + [0] * (c.n - len(coeffs))
+    assert len(coeffs) == c.n
+    t = correlation(coeffs)
+    assert -c.n < t and t < c.n, "correlation is outside expected range"
+    s = 1
+    if t < 0:
+        s = -1
+    i = 0
+    while i < c.n - 1:
+        coeffs[i] = s * coeffs[i] 
+        i += 2
+    result = sum([a * x^i for (i, a) in enumerate(coeffs)])
 
-	assert correlation(result.list()) >= 0, "does not satisfy non-negative correlation condition" 
-	return S3_bar(result)
+    assert correlation(result.list()) >= 0, "does not satisfy non-negative correlation condition" 
+    return S3_bar(result)
 
 def Fixed_Type(b):
 	raise NotImplementedError("TODO!")

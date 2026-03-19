@@ -25,17 +25,21 @@ def test_encryption(seed):
     #p_key = 
 
 
-    #print(type(ss_decap), type(ss_encap))
-    print(to_hex_str(ss_decap), "private key")
-    print(to_hex_str(ss_encap), "private key")
-    print(ss_encap == ss_decap)
-    print(ss_encap, ss_decap)
+    #print(private_key, type(ss_encap))
+
+    print(bytes_to_hex(private_key), "private key")
+    print(bytes_to_hex(public_key), "public key key")
+    #print(ss_encap == ss_decap)
+    #print(ss_encap, ss_decap)
 
 def byte_to_byte(b):
     value = 0
     for (i, v) in enumerate(b):
         value += v << i
     return value
+
+def bytes_to_hex(b):
+    return to_hex_str([byte_to_byte(byte) for byte in b])
 
 def to_hex_str(a):
     return ''.join([hex(b)[2:] for b in a])
