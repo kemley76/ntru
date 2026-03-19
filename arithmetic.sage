@@ -139,4 +139,4 @@ def Sq_inverse(a):
 # Input: m (polynomial)
 # Output: (Φ_1 * S3(m/Φ_1)) (polynomial) HRSS
 def Lift(m):
-    return (PHI_1 * S3_bar(m // PHI_1))
+    return (PHI_1 * S3_bar(m * S3_inverse(PHI_1)))
