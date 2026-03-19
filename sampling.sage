@@ -6,10 +6,10 @@ def Sample_fg(fg_bits):
 	f_bits = fg_bits[:c.sample_iid_bits]
 	g_bits = fg_bits[c.sample_iid_bits:]
 	f = Ternary_Plus(f_bits)
+	#g = Ternary_Plus(g_bits)
 	g_0 = Ternary_Plus(g_bits)
 	g = PHI_1 * g_0
 	return (f, g)
-	
 
 def Sample_rm(rm_bits):
 	assert len(rm_bits) == c.sample_iid_bits * 2
