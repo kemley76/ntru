@@ -31,6 +31,7 @@ def bytes_to_bits(bytes_in, length):
         byte.reverse()
         for bit in byte:
             bits_out.append(int(bit))
+    bits_out += (length - len(bits_out)) * [0]
     return bits_out
 
 def pack_Rq0(a):
@@ -100,10 +101,16 @@ def pack_S3(a):
     result = bits_to_bytes(b)
     assert len(result) == c.packed_s3_bytes, "pack s3 has wrong length result"
     return result
-
+    
 def unpack_S3(B):
-    coeffs = []
-    for byte in B:
-        byte.reverse()
-        coeffs += ZZ(byte, 2).digits(3, padto=5)
-    return S3(Z(coeffs))
+    i = 0
+    bits = bytes_to_bits(B, 8*ceil((c.n - 1) / 5))
+    v = []
+    while i < ceil((c.n - 1) / 5):
+        coeffs = []
+        coeffs.append(ZZ(bits[i*8:i*8+8], 2).digits(3,padto=5))
+        for coe in coeffs[0]:
+            v.append(coe)
+        i+= 1
+    return S3(Z(v))
+

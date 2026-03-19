@@ -23,12 +23,13 @@ def Key_Pair(seed):
 def Encapsulate(packed_public_key):
     coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
     (r, m) = Sample_rm(coins)
-    print("r:", r)
-    print("")
-    print("m:", m)
+    # print("r:", r)
+    # print("")
+    # print("m:", m)
     packed_rm = pack_S3(r) + pack_S3(m)
-    #print("Encapsulate:", packed_rm)
-    shared_key = hash(packed_rm)
+    # print("Encapsulate:", packed_rm)
+    print(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
+    shared_key = hash(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
     return (shared_key, packed_ciphertext)
 
@@ -37,28 +38,38 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     assert len(packed_ciphertext) == c.kem_ciphertext_bytes, "Invalid packed ciphertext length"
     packed_dpke_private_key = packed_private_key[:c.dpke_private_key_bytes]
     prf_key = packed_private_key[c.dpke_private_key_bytes:]
-    print(len(prf_key), ceil(c.prf_key_bits/8))
+    # print(len(prf_key), ceil(c.prf_key_bits/8))
+    assert len(packed_dpke_private_key) == c.dpke_private_key_bytes, "dpke private key is the wrong length"
     assert len(prf_key) == ceil(c.prf_key_bits/8), "prf key is the wrong length" 
 
     # Idk why the algorithm specifies this?
-    #packed_f = packed_private_key[:c.packed_s3_bytes]
-    #packed_fp = packed_private_key[c.packed_s3_bytes:c.packed_s3_bytes * 2] 
-    #packed_hq = packed_private_key[c.packed_s3_bytes * 2:]
+    packed_f = packed_private_key[:c.packed_s3_bytes]
+    packed_fp = packed_private_key[c.packed_s3_bytes:c.packed_s3_bytes * 2] 
+    packed_hq = packed_private_key[c.packed_s3_bytes * 2:]
     #assert len(packed_hq) == c.packed_s3_bytes
 
     (packed_rm, fail) = DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext)
-    #print("Decapsulate:", packed_rm)
-    shared_key = hash(packed_rm)
-    random_key = hash(prf_key + packed_ciphertext)
+    # print("Decapsulate:", packed_rm)
+    print(bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes))
+    shared_key = hash(bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes))
+    random_key = hash(bytes_to_bits(prf_key, c.prf_key_bits) +  bytes_to_bits(packed_ciphertext, 8*c.kem_ciphertext_bytes) )
     if fail:
-        print("failed lol")
+        # print("failed lol")
         return random_key
     else: 
         return shared_key
 
 def hash(B):
     m = hashlib.sha3_256()
-    m.update(bytes([byte_to_byte(b) for b in B]))
+    # print([byte_to_byte(b) for b in B])
+    i=0
+    while i*8 < len(B):
+        # print(ZZ(B[i*8:i*8+8], 2),' ', ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'), '\n')
+        m.update(ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'))
+        i+=1
+    # print(i*8, len(B))
+    # m.update(bytes_to_bits(B))
+    # m.update(0.to_bytes(1,byteorder='big'))
     return m.digest()
 
 def byte_to_byte(b):

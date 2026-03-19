@@ -9,10 +9,10 @@ load('encodings.sage')
 def DPKE_Key_Pair(coins):
     assert len(coins) == c.sample_key_bits
     (f,g) = Sample_fg(coins)
-    print("COins", bytes_to_hex(bits_to_bytes(coins)), "\n\n")
-    print("S3 f!!!!", bytes_to_hex(pack_S3(f)), "\n\n")
-    print("F", f)
-    print("G", g)
+    # print("COins", bytes_to_hex(bits_to_bytes(coins)), "\n\n")
+    # print("S3 f!!!!", bytes_to_hex(pack_S3(f)), "\n\n")
+    # print("F", f)
+    # print("G", g)
     f_p = S3_inverse(f)
     (h, h_q) = DPKE_Public_Key(f, g)
     packed_private_key = pack_S3(f) + pack_S3(f_p) + pack_Sq(h_q)
@@ -43,7 +43,7 @@ def DPKE_Public_Key(f, g):
 # output: packed_ciphertext (byte array of length dpke_ciphertext_bytes)
 def DPKE_Encrypt(packed_public_key, packed_rm):
     assert len(packed_public_key) == c.dpke_public_key_bytes, "packed public key is wrong size"
-    print(len(packed_rm), c.dpke_plaintext_bytes)
+    # print(len(packed_rm), c.dpke_plaintext_bytes)
     assert len(packed_rm) == c.dpke_plaintext_bytes, "packed_rm is wrong size"
 
     packed_r = packed_rm[:c.packed_s3_bytes]

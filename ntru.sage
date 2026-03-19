@@ -27,9 +27,9 @@ def test_encryption(seed):
 
     #print(private_key, type(ss_encap))
 
-    print(bytes_to_hex(private_key), "private key")
-    print(bytes_to_hex(public_key), "public key key")
-    #print(ss_encap == ss_decap)
+    # print(bytes_to_hex(private_key), "private key")
+    # print(bytes_to_hex(public_key), "public key key")
+    print(ss_encap == ss_decap)
     #print(ss_encap, ss_decap)
 
 def byte_to_byte(b):
