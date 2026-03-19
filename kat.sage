@@ -46,8 +46,9 @@ def test_kat():
 def bytes_to_hex(b):
     res = ''
     for byte in b:
-        byte.reverse()
-        res += hex(ZZ(byte, 2))[2:]
+        hash_byte = copy.deepcopy(byte)
+        hash_byte.reverse()
+        res += hex(ZZ(hash_byte, 2))[2:]
     return res
 
 def to_hex_str(a):

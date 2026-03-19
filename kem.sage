@@ -28,7 +28,7 @@ def Encapsulate(packed_public_key):
     # print("m:", m)
     packed_rm = pack_S3(r) + pack_S3(m)
     # print("Encapsulate:", packed_rm)
-    print(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
+    # print(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
     shared_key = hash(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
     return (shared_key, packed_ciphertext)
@@ -50,7 +50,14 @@ def Decapsulate(packed_private_key, packed_ciphertext):
 
     (packed_rm, fail) = DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext)
     # print("Decapsulate:", packed_rm)
-    print(bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes))
+    
+    decapBits = bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes)
+    # print(bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes))
+    # if decapBits[8*c.packed_s3_bytes] == 1:
+    #     decapBits[8*c.packed_s3_bytes] = 0
+    # else:
+    #     decapBits[8*c.packed_s3_bytes] = 1
+
     shared_key = hash(bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes))
     random_key = hash(bytes_to_bits(prf_key, c.prf_key_bits) +  bytes_to_bits(packed_ciphertext, 8*c.kem_ciphertext_bytes) )
     if fail:
@@ -58,6 +65,8 @@ def Decapsulate(packed_private_key, packed_ciphertext):
         return random_key
     else: 
         return shared_key
+
+
 
 def hash(B):
     m = hashlib.sha3_256()

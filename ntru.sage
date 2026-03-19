@@ -1,13 +1,12 @@
 import hashlib  
 import constants as c
 
-shake_256 = hashlib.shake_256()
+# shake_256 = hashlib.shake_256()
 load('kem.sage')
 
 def test_encryption(seed):
-    m = hashlib.shake_256()
-    m.update(bytes.fromhex(seed))
-    expanded_seed = m.digest((c.sample_key_bits + c.prf_key_bits) // 8)
+
+    expanded_seed = hash_test(seed)
     full_seed = []
     for b in expanded_seed:
         binary = bin(b)[2:]
@@ -43,3 +42,9 @@ def bytes_to_hex(b):
 
 def to_hex_str(a):
     return ''.join([hex(b)[2:] for b in a])
+
+def hash_test(seed):
+    m = hashlib.shake_256()
+    m.update(bytes.fromhex(seed))
+    expanded_seed = m.digest((c.sample_key_bits + c.prf_key_bits) // 8)
+    return expanded_seed

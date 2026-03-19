@@ -1,6 +1,7 @@
 from math import ceil 
 from math import log2
 import constants as c
+import copy
 load('arithmetic.sage')
 logq = int(log2(c.q))
 
@@ -28,8 +29,9 @@ def bits_to_bytes(bits_in):
 def bytes_to_bits(bytes_in, length):
     bits_out = []
     for byte in bytes_in:
-        byte.reverse()
-        for bit in byte:
+        test_byte = copy.deepcopy(byte)
+        test_byte.reverse()
+        for bit in test_byte:
             bits_out.append(int(bit))
     bits_out += (length - len(bits_out)) * [0]
     return bits_out
