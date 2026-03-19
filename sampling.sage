@@ -20,7 +20,6 @@ def Sample_rm(rm_bits):
 	return (r, m)
 
 def Ternary(b):
-	b.reverse()
 	assert len(b) == c.sample_iid_bits 
 	assert c.sample_iid_bits == 8 * (c.n - 1)
 	v = 0
