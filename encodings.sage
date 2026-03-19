@@ -52,7 +52,16 @@ def unpack_Rq0(B):
 
     for i in range(0, (c.n - 1) * logq, logq):
         coeffs.append(ZZ(bits[i:i+logq], 2))
-    return Rq_bar(Z(coeffs))	
+    
+    last_coeff = (-sum(coeffs)) % c.q
+    coeffs.append(last_coeff)
+
+    a = Rq(coeffs)
+    # for assertion:
+    remainder = a % PHI_1
+    assert all(coeff % c.q == 0 for coeff in remainder.list()), "a is not equiv to zero"
+
+    return a
 
 def pack_Sq(a):
     # assert a in Z, "input is not a polynomial"
