@@ -22,14 +22,15 @@ def test_all():
 		known_ct = f.readline().split()[-1]
 		known_ss = f.readline().split()[-1]
 		f.readline()
-		(pk, sk, ct, ss) = test_kat(seed)
+		(pk, sk, ct, ss, ss2) = test_kat(seed)
 
-		passes = [known_pk == pk, known_sk == sk, known_ct == ct, known_ss == ss]
+		passes = [known_pk == pk, known_sk == sk, known_ct == ct, known_ss == ss, known_ss == ss2]
 		print("Test", count)
 		print("PK", passes[0])
 		print("SK", passes[1])
 		print("CT", passes[2])
 		print("SS", passes[3])
+		print("SS2", passes[4])
 		print()
 		if all(passes):
 			pass_count += 1
@@ -55,11 +56,7 @@ def test_kat(hex_seed):
     assert result == 0 # success!
     bits += [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
 
-    #print(len(bits))
-    #print(result, bytes(buffer))
     (private_key, public_key) = Key_Pair(bits)
-    #print("PRIV:", bytes_to_hex(private_key)) # matches!
-    #print("\n\nPUB:", bytes_to_hex(public_key))
 
     # prf_key
     size = int(c.sample_plaintext_bits // 8)
@@ -68,9 +65,8 @@ def test_kat(hex_seed):
     assert result == 0 # success!
     bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
     (shared_key, ciphertext, _) = Encapsulate(public_key, coins=bits)
-    #print("SS:", shared_key.hex())
-    #print("CT:", bytes_to_hex(ciphertext))
-    return bytes_to_hex(public_key), bytes_to_hex(private_key), bytes_to_hex(ciphertext), shared_key.hex().upper()
+    (shared_key2, _) = Decapsulate(private_key, ciphertext)
+    return bytes_to_hex(public_key), bytes_to_hex(private_key), bytes_to_hex(ciphertext), shared_key.hex().upper(), shared_key2.hex().upper()
 
 def bytes_to_hex(b):
     res = ''
