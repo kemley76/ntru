@@ -6,7 +6,6 @@ def Sample_fg(fg_bits):
 	f_bits = fg_bits[:c.sample_iid_bits]
 	g_bits = fg_bits[c.sample_iid_bits:]
 	f = Ternary_Plus(f_bits)
-	#g = Ternary_Plus(g_bits)
 	g_0 = Ternary_Plus(g_bits)
 	g = PHI_1 * g_0
 	return (f, g)
@@ -32,7 +31,6 @@ def Ternary(b):
 def Ternary_Plus(b):
     assert len(b) == c.sample_iid_bits, "input is not correct length"
     v = Ternary(b)
-    # print("TERNARY", v)
     coeffs = v.list()
     coeffs = coeffs + [0] * (c.n - len(coeffs))
     assert len(coeffs) == c.n

@@ -70,7 +70,7 @@ def unpack_Rq0(B):
     return a
 
 def pack_Sq(a):
-    # assert a in Z, "input is not a polynomial"
+    assert a in Z, "input is not a polynomial"
     v = Sq_bar(a)
     b = []
     coeffs = v.list()

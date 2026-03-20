@@ -24,13 +24,7 @@ def Encapsulate(packed_public_key, coins=None):
     if coins == None:
         coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
     (r, m) = Sample_rm(coins)
-    # print("r:", r)
-    # print("")
-    # print("m:", m)
     packed_rm = pack_S3(r) + pack_S3(m)
-    # print("Encapsulate:", packed_rm)
-    # print(bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes))
-    packed_rm 
     bitStringOut = bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes)
     shared_key = hash(bitStringOut)
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
@@ -41,30 +35,13 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     assert len(packed_ciphertext) == c.kem_ciphertext_bytes, "Invalid packed ciphertext length"
     packed_dpke_private_key = packed_private_key[:c.dpke_private_key_bytes]
     prf_key = packed_private_key[c.dpke_private_key_bytes:]
-    # print(len(prf_key), ceil(c.prf_key_bits/8))
     assert len(packed_dpke_private_key) == c.dpke_private_key_bytes, "dpke private key is the wrong length"
     assert len(prf_key) == ceil(c.prf_key_bits/8), "prf key is the wrong length" 
 
-    # Idk why the algorithm specifies this?
-    packed_f = packed_private_key[:c.packed_s3_bytes]
-    packed_fp = packed_private_key[c.packed_s3_bytes:c.packed_s3_bytes * 2] 
-    packed_hq = packed_private_key[c.packed_s3_bytes * 2:]
-    #assert len(packed_hq) == c.packed_s3_bytes
-
     (packed_rm, fail, packed_m) = DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext)
-    # print("Decapsulate:", packed_rm)
-    
-    decapBits = bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes)
-    # print(bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes))
-    # if decapBits[8*c.packed_s3_bytes] == 1:
-    #     decapBits[8*c.packed_s3_bytes] = 0
-    # else:
-    #     decapBits[8*c.packed_s3_bytes] = 1
-
     shared_key = hash(bytes_to_bits(packed_rm,8*c.dpke_plaintext_bytes))
     random_key = hash(bytes_to_bits(prf_key, c.prf_key_bits) +  bytes_to_bits(packed_ciphertext, 8*c.kem_ciphertext_bytes) )
     if fail:
-        # print("failed lol")
         return (random_key, packed_m)
     else: 
         return (shared_key, packed_m)
