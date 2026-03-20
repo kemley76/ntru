@@ -8,8 +8,36 @@ lib.randombytes_init.restype = None
 
 lib.randombytes.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_ulonglong]
 lib.randombytes.restype = ctypes.c_int
-def test_kat():
-    hex_seed = "061550234D158C5EC95595FE04EF7A25767F2E24CC2BC479D09D86DC9ABCFDE7056A8C266F9EF97ED08541DBD2E1FFA1"
+
+def test_all():
+	f = open('PQCkemKAT_1450.rsp', 'r')
+	f.readline()
+	f.readline()
+	pass_count = 0
+	for i in range(100):
+		count = f.readline().split()[-1]
+		seed = f.readline().split()[-1]
+		known_pk = f.readline().split()[-1]
+		known_sk = f.readline().split()[-1]
+		known_ct = f.readline().split()[-1]
+		known_ss = f.readline().split()[-1]
+		f.readline()
+		(pk, sk, ct, ss) = test_kat(seed)
+
+		passes = [known_pk == pk, known_sk == sk, known_ct == ct, known_ss == ss]
+		print("Test", count)
+		print("PK", passes[0])
+		print("SK", passes[1])
+		print("CT", passes[2])
+		print("SS", passes[3])
+		print()
+		if all(passes):
+			pass_count += 1
+
+	f.close()
+	print(f"Total passes: {pass_count}/100")
+
+def test_kat(hex_seed):
     seed = bytes.fromhex(hex_seed)
     lib.randombytes_init(seed, None, 256)
 
@@ -27,11 +55,11 @@ def test_kat():
     assert result == 0 # success!
     bits += [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
 
-    print(len(bits))
+    #print(len(bits))
     #print(result, bytes(buffer))
     (private_key, public_key) = Key_Pair(bits)
-    print("PRIV:", bytes_to_hex(private_key)) # matches!
-    print("\n\nPUB:", bytes_to_hex(public_key))
+    #print("PRIV:", bytes_to_hex(private_key)) # matches!
+    #print("\n\nPUB:", bytes_to_hex(public_key))
 
     # prf_key
     size = int(c.sample_plaintext_bits // 8)
@@ -39,17 +67,18 @@ def test_kat():
     result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
     assert result == 0 # success!
     bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
-    (shared_key, ciphertext) = Encapsulate(public_key, coins=bits)
-    print("SS:", shared_key.hex())
-    print("CT:", bytes_to_hex(ciphertext))
+    (shared_key, ciphertext, _) = Encapsulate(public_key, coins=bits)
+    #print("SS:", shared_key.hex())
+    #print("CT:", bytes_to_hex(ciphertext))
+    return bytes_to_hex(public_key), bytes_to_hex(private_key), bytes_to_hex(ciphertext), shared_key.hex().upper()
 
 def bytes_to_hex(b):
     res = ''
     for byte in b:
         hash_byte = copy.deepcopy(byte)
         hash_byte.reverse()
-        res += format(ZZ(hash_byte, 2), '02x')
+        res += format(ZZ(hash_byte, 2), '02X')
     return res
 
 def to_hex_str(a):
-    return ''.join([format(b, '02x') for b in a])
+    return ''.join([format(b, '02X') for b in a])

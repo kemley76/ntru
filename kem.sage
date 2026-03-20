@@ -69,19 +69,12 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     else: 
         return (shared_key, packed_m)
 
-
-
 def hash(B):
     m = hashlib.sha3_256()
-
-    byte_array = bytearray()
-    for i in range(0, len(B), 8):
-        byte_val = 0
-        for bit in B[i:i+8]:
-            byte_val = (byte_val << 1) | bit
-        byte_array.append(byte_val)
-        # print("{:08b}".format(byte_val), B[i:i+8])
-    m.update(byte_array)
+    i=0
+    while i*8 < len(B):
+        m.update(ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'))
+        i+=1
     return m.digest()
 
 def byte_to_hash_byte(b):
