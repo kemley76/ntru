@@ -20,8 +20,9 @@ def Key_Pair(seed):
     assert len(packed_public_key) == c.kem_public_key_bytes, "Public key is wrong length"
     return (packed_private_key, packed_public_key)
 
-def Encapsulate(packed_public_key):
-    coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
+def Encapsulate(packed_public_key, coins=None):
+    if coins == None:
+        coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
     (r, m) = Sample_rm(coins)
     # print("r:", r)
     # print("")

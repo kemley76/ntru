@@ -30,26 +30,26 @@ def test_kat():
     print(len(bits))
     #print(result, bytes(buffer))
     (private_key, public_key) = Key_Pair(bits)
-    # print(bytes_to_hex(private_key), "private_key\n\n\n") # matches!
-    #print(bytes_to_hex(public_key), "public_key\n\n\n")
+    print("PRIV:", bytes_to_hex(private_key)) # matches!
+    print("\n\nPUB:", bytes_to_hex(public_key))
 
     # prf_key
-    #size = int(c.sample_plaintext_bits // 8)
-    #buffer = (ctypes.c_ubyte * size)()
-    #result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
-    #assert result == 0 # success!
-    #bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
-    #(shared_key, ciphertext) = Encapsulate(public_key, bits)
-    #print(shared_key.hex(), "shared secret\n\n\n")
-    #print(ciphertext.hex(), "shared secret\n\n\n")
+    size = int(c.sample_plaintext_bits // 8)
+    buffer = (ctypes.c_ubyte * size)()
+    result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
+    assert result == 0 # success!
+    bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
+    (shared_key, ciphertext) = Encapsulate(public_key, coins=bits)
+    print("SS:", shared_key.hex())
+    print("CT:", bytes_to_hex(ciphertext))
 
 def bytes_to_hex(b):
     res = ''
     for byte in b:
         hash_byte = copy.deepcopy(byte)
         hash_byte.reverse()
-        res += hex(ZZ(hash_byte, 2))[2:]
+        res += format(ZZ(hash_byte, 2), '02x')
     return res
 
 def to_hex_str(a):
-    return ''.join([hex(b)[2:] for b in a])
+    return ''.join([format(b, '02x') for b in a])
