@@ -38,35 +38,35 @@ def test_all():
 	f.close()
 	print(f"Total passes: {pass_count}/100")
 
-def test_kat(hex_seed):
-    seed = bytes.fromhex(hex_seed)
-    lib.randombytes_init(seed, None, 256)
-
-    # fg_bits
-    size = int(c.sample_key_bits // 8)
-    buffer = (ctypes.c_ubyte * size)()
-    result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
-    assert result == 0 # success!
-    bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
-
-    # prf_key
-    size = int(c.prf_key_bits // 8)
-    buffer = (ctypes.c_ubyte * size)()
-    result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
-    assert result == 0 # success!
-    bits += [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
-
-    (private_key, public_key) = Key_Pair(bits)
-
-    # prf_key
-    size = int(c.sample_plaintext_bits // 8)
-    buffer = (ctypes.c_ubyte * size)()
-    result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
-    assert result == 0 # success!
-    bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
-    (shared_key, ciphertext, _) = Encapsulate(public_key, coins=bits)
-    (shared_key2, _) = Decapsulate(private_key, ciphertext)
-    return bytes_to_hex(public_key), bytes_to_hex(private_key), bytes_to_hex(ciphertext), shared_key.hex().upper(), shared_key2.hex().upper()
+    def test_kat(hex_seed):
+        seed = bytes.fromhex(hex_seed)
+        lib.randombytes_init(seed, None, 256)
+    
+        # fg_bits
+        size = int(c.sample_key_bits // 8)
+        buffer = (ctypes.c_ubyte * size)()
+        result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
+        assert result == 0 # success!
+        bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
+    
+        # prf_key
+        size = int(c.prf_key_bits // 8)
+        buffer = (ctypes.c_ubyte * size)()
+        result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
+        assert result == 0 # success!
+        bits += [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
+    
+        (private_key, public_key) = Key_Pair(bits)
+    
+        # prf_key
+        size = int(c.sample_plaintext_bits // 8)
+        buffer = (ctypes.c_ubyte * size)()
+        result = lib.randombytes(buffer, ctypes.c_ulonglong(size))
+        assert result == 0 # success!
+        bits = [(byte >> i) & 1 for byte in bytes(buffer) for i in range(8)]
+        (shared_key, ciphertext, _) = Encapsulate(public_key, coins=bits)
+        (shared_key2, _) = Decapsulate(private_key, ciphertext)
+        return bytes_to_hex(public_key), bytes_to_hex(private_key), bytes_to_hex(ciphertext), shared_key.hex().upper(), shared_key2.hex().upper()
 
 def bytes_to_hex(b):
     res = ''

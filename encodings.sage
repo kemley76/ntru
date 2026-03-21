@@ -36,6 +36,8 @@ def bytes_to_bits(bytes_in, length):
     bits_out += (length - len(bits_out)) * [0]
     return bits_out
 
+# takes in some polynomial a, finds its representation in the Rq ring, and extracts all coefficients of post rq representation. 
+# These coefficients are converted to binary and packed into a list for further operation
 def pack_Rq0(a):
     assert a in Z, "input is not a polynomial"
     remainder = a % PHI_1
@@ -51,6 +53,8 @@ def pack_Rq0(a):
     assert len(result) == c.packed_rq0_bytes, "result is wrong length"
     return result
 
+# takes in some list of bytes and converts these bytes into integer coefficients
+# using some given length of bits / coefficient log2q
 def unpack_Rq0(B):
     assert len(B) == c.packed_rq0_bytes, "input is wrong length"
     coeffs = []
@@ -69,6 +73,8 @@ def unpack_Rq0(B):
 
     return a
 
+# takes in some polynomial a, evalutes a in the ring Sq, extracts its coefficients, and converts its post sq 
+# coefficients to binary with a given length per number. 
 def pack_Sq(a):
     assert a in Z, "input is not a polynomial"
     v = Sq_bar(a)
@@ -80,7 +86,9 @@ def pack_Sq(a):
     result = bits_to_bytes(b)
     assert len(result) == c.packed_sq_bytes, "result is wrong length"
     return result
-	
+
+# takes in some list of bytes, forms a list of bits, breaks up the list of bits into sections of length
+# log2(q) and then passes the result to Sq normative form. 
 def unpack_Sq(B):
     assert len(B) == c.packed_sq_bytes, "input is wrong length"
     coeffs = []
@@ -90,6 +98,8 @@ def unpack_Sq(B):
         coeffs.append(ZZ(bits[i:i+logq], 2))
     return Sq(Z(coeffs))
 
+# takes in some polynomial a, evalutes a in the ring S3, extracts its post transformation coefficients, 
+# and converts its post s3  coefficients to binary with a given length per number. 
 def pack_S3(a):
     v = S3_bar(a)
     b = []
@@ -103,7 +113,10 @@ def pack_S3(a):
     result = bits_to_bytes(b)
     assert len(result) == c.packed_s3_bytes, "pack s3 has wrong length result"
     return result
-    
+
+# takes in some list of bytes, forms a list of bits, breaks up the list of bits into sections of length
+# 8 and then conducts a change of basis operation to ternary bytes of length 5. These bytes are used as
+# coefficients of V and rerepresented in S3. 
 def unpack_S3(B):
     i = 0
     bits = bytes_to_bits(B, 8*ceil((c.n - 1) / 5))

@@ -1,6 +1,8 @@
 import constants as c
 load('arithmetic.sage')
-
+# splits up the given bitstream of length twice sample iid bits into f and g bits 
+# then passes each bitstream into a function to create a ternary polynomial and 
+# another function to create a ternary polynomial with non-negative correlation
 def Sample_fg(fg_bits):
 	assert len(fg_bits) == c.sample_iid_bits * 2
 	f_bits = fg_bits[:c.sample_iid_bits]
@@ -9,7 +11,8 @@ def Sample_fg(fg_bits):
 	g_0 = Ternary_Plus(g_bits)
 	g = PHI_1 * g_0
 	return (f, g)
-
+# splits up the given bitstream of length twice sample iid bits into f and g bits 
+# then passes each bitstream into a function to create a ternary polynomial from that bitstream
 def Sample_rm(rm_bits):
 	assert len(rm_bits) == c.sample_iid_bits * 2
 	r_bits = rm_bits[:c.sample_iid_bits]
@@ -17,7 +20,8 @@ def Sample_rm(rm_bits):
 	r = Ternary(r_bits)
 	m = Ternary(m_bits)
 	return (r, m)
-
+# takes in some bitstream, converts it into integers at 8 bits per int
+# the passes the list of integers to S3_bar to reduce the result down to the S3 ring
 def Ternary(b):
 	assert len(b) == c.sample_iid_bits 
 	assert c.sample_iid_bits == 8 * (c.n - 1)
@@ -27,7 +31,9 @@ def Ternary(b):
 		v += sum([2^j * b[8 * i + j] for j in range(8)]) * x^i
 		i += 1
 	return S3_bar(v)
-
+# takes in some bitstream, sums over the product of consecutive bits, check to see if this sum 
+# is less than one and then constructs either the negation or standard version of that polynomial
+# in the S3 ring.
 def Ternary_Plus(b):
     assert len(b) == c.sample_iid_bits, "input is not correct length"
     v = Ternary(b)
