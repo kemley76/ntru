@@ -2,12 +2,12 @@ import constants as c
 from random import randint
 from math import ceil
 import hashlib
-sha3_256 = hashlib.sha3_256()
 
 load('dpke.sage')
 load('encodings.sage')
 load('sampling.sage')
 
+# Generates a public and a private key for use in the key exchange
 def Key_Pair(seed):
     assert len(seed) == c.sample_key_bits + c.prf_key_bits, "invalid seed length"
     fg_bits = seed[:c.sample_key_bits]
@@ -20,6 +20,8 @@ def Key_Pair(seed):
     assert len(packed_public_key) == c.kem_public_key_bytes, "Public key is wrong length"
     return (packed_private_key, packed_public_key)
 
+# Generates a shared secret key and a ciphertext. The ciphertext can be 
+# used with the private key to recover the same shared secret key
 def Encapsulate(packed_public_key, coins=None):
     if coins == None:
         coins = [randint(0, 1) for _ in range(c.sample_plaintext_bits)]
@@ -30,6 +32,8 @@ def Encapsulate(packed_public_key, coins=None):
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
     return (shared_key, packed_ciphertext, m.list())
 
+# Recovers the shared secret key from the ciphertext using the known private key
+# There is a very small chance of failure, in which Decapsulate will return a random key 
 def Decapsulate(packed_private_key, packed_ciphertext):
     assert len(packed_private_key) == c.kem_private_key_bytes, "Invalid packed private key length"
     assert len(packed_ciphertext) == c.kem_ciphertext_bytes, "Invalid packed ciphertext length"
@@ -46,18 +50,12 @@ def Decapsulate(packed_private_key, packed_ciphertext):
     else: 
         return (shared_key, packed_m)
 
+# Hashes a bitstring using sha3_256
 def hash(B):
     m = hashlib.sha3_256()
     i=0
     while i*8 < len(B):
+        # converts a chunk of 8 bits into a byte and adds it to the hash function buffer
         m.update(ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'))
         i+=1
     return m.digest()
-
-def byte_to_hash_byte(b):
-    value = 0
-    useB = copy.deepcopy(b)
-    useB.reverse()
-    for (i, v) in enumerate(useB):
-        value += v << i
-    return value

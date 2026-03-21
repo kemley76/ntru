@@ -1,3 +1,4 @@
+# Constants for the NTRU HPSS 701 parameter set
 n = 701
 q = 8192
 #Hash = SHA3_256

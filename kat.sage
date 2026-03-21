@@ -2,6 +2,8 @@ import ctypes
 import constants as c
 from time import time
 load('kem.sage')
+
+# This references a shared library so we can use the reference implementation's DRNG from SageMath   
 lib = ctypes.CDLL('./librng.so')
 
 lib.randombytes_init.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_ulonglong]
@@ -10,6 +12,7 @@ lib.randombytes_init.restype = None
 lib.randombytes.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_ulonglong]
 lib.randombytes.restype = ctypes.c_int
 
+# Parses the KAT file and checks and times our implementation against the tests contained in it
 def test_all():
 	f = open('PQCkemKAT_1450.rsp', 'r')
 	f.readline()
@@ -19,6 +22,7 @@ def test_all():
 	enc_times = []
 	dec_times = []
 	for i in range(100):
+        # extract data from KAT file
 		count = f.readline().split()[-1]
 		seed = f.readline().split()[-1]
 		known_pk = f.readline().split()[-1]
@@ -26,11 +30,14 @@ def test_all():
 		known_ct = f.readline().split()[-1]
 		known_ss = f.readline().split()[-1]
 		f.readline()
+
+        # run the test
 		(pk, sk, ct, ss, ss2, key_time, enc_time, dec_time) = test_kat(seed)
 		key_times.append(key_time)
 		enc_times.append(enc_time)
 		dec_times.append(dec_time)
 
+        # check if our outputs match the KAT
 		passes = [known_pk == pk, known_sk == sk, known_ct == ct, known_ss == ss, known_ss == ss2]
 		print("Test", count)
 		print("PK", passes[0])
@@ -43,6 +50,7 @@ def test_all():
 			pass_count += 1
 
 	f.close()
+    # Print summary
 	print(f"Total passes: {pass_count}/100")
 	print("Average key gen time:", sum(key_times)/len(key_times))
 	print("Average encapsulate time:", sum(enc_times)/len(enc_times))
