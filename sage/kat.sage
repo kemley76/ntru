@@ -102,6 +102,3 @@ def bytes_to_hex(b):
         hash_byte.reverse()
         res += format(ZZ(hash_byte, 2), '02X')
     return res
-
-def to_hex_str(a):
-    return ''.join([format(b, '02X') for b in a])

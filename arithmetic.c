@@ -1,12 +1,14 @@
 #include "arithmetic.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 // Finds the non-normative representative of the given polynomial
 // in the R/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n))
-struct poly* Rq(poly *a){
+struct poly *Rq(poly *a) {
     struct poly *b = malloc(sizeof(struct poly));
-    for (int i = 0; i < N; i++){
+    for (int i = 0; i < N; i++) {
         b->coeffs[i] = a->coeffs[i] % Q;
     }
     return b;
@@ -18,27 +20,28 @@ struct poly* Rq(poly *a){
 // must be between (-q/2) and (q/2 - 1)
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n))
-struct poly* Rq_bar(poly *a){
+struct poly *Rq_bar(poly *a) {
     struct poly *b = malloc(sizeof(struct poly));
-    for (int i = 0; i < N; i++){
+    for (int i = 0; i < N; i++) {
         b->coeffs[i] = a->coeffs[i] % Q;
-        if (b->coeffs[i] >= (Q/2)){
+        if (b->coeffs[i] >= (Q / 2)) {
             b->coeffs[i] -= Q;
         }
     }
     return b;
 }
 
-// Finds the representative of the given polynomial in the 
+// Finds the representative of the given polynomial in the
 // S/2 quotient ring
 // Note: the non-normative and canonical representation in S/2
 // are the same
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(2,Φ_n))
-struct poly* S2(poly *a){
+struct poly *S2(poly *a) {
     struct poly *b = malloc(sizeof(struct poly));
-    int last = a->coeffs[N-1] % 2; // TODO: Check to make sure this is how it works
-    for (int i = 0; i < N; i++){
+    int last =
+        a->coeffs[N - 1] % 2; // TODO: Check to make sure this is how it works
+    for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % 2;
     }
     return b;
@@ -48,10 +51,10 @@ struct poly* S2(poly *a){
 // in the S/3 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-struct poly* S3(poly *a){
+struct poly *S3(poly *a) {
     struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N-1] % 3;
-    for (int i = 0; i < N; i++){
+    int last a->coeffs[N - 1] % 3;
+    for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % 3;
     }
     return b;
@@ -63,12 +66,12 @@ struct poly* S3(poly *a){
 // must be between -1 and 1
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-struct poly* S3_bar(poly *a){
+struct poly *S3_bar(poly *a) {
     struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N-1] % 3;
-    for (int i = 0; i < N; i++){
+    int last a->coeffs[N - 1] % 3;
+    for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % 3;
-        if (b->coeffs[i] > 1){
+        if (b->coeffs[i] > 1) {
             b->coeffs[i] -= 3;
         }
     }
@@ -79,10 +82,10 @@ struct poly* S3_bar(poly *a){
 // in the S/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is not normative)
-struct poly* Sq(poly *a){
+struct poly *Sq(poly *a) {
     struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N-1] % Q;
-    for (int i = 0; i < N; i++){
+    int last a->coeffs[N - 1] % Q;
+    for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % Q;
     }
     return b;
@@ -94,12 +97,12 @@ struct poly* Sq(poly *a){
 // must be between (-q/2) and (q/2 - 1)
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is canonical)
-struct poly* Sq_bar(poly *a){
+struct poly *Sq_bar(poly *a) {
     struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N-1] % Q;
-    for (int i = 0; i < N; i++){
+    int last a->coeffs[N - 1] % Q;
+    for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % Q;
-        if (b->coeffs[i] > (Q/2)){
+        if (b->coeffs[i] > (Q / 2)) {
             b->coeffs[i] -= Q;
         }
     }
@@ -109,7 +112,7 @@ struct poly* Sq_bar(poly *a){
 // Compute inverses in S/2 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(2,Φ_n))
-void S2_inverse(){
+void S2_inverse() {
     fprintf(stderr, "Error: Function is not implemented.\n");
     exit(EXIT_FAILURE);
 }
@@ -117,7 +120,7 @@ void S2_inverse(){
 // Compute inverses in S/3 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-void S3_inverse(){
+void S3_inverse() {
     fprintf(stderr, "Error: Function is not implemented.\n");
     exit(EXIT_FAILURE);
 }
@@ -125,7 +128,7 @@ void S3_inverse(){
 // Compute inverses in S/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(q,Φ_n))
-void Sq_inverse(){
+void Sq_inverse() {
     fprintf(stderr, "Error: Function is not implemented.\n");
     exit(EXIT_FAILURE);
 }
@@ -133,7 +136,7 @@ void Sq_inverse(){
 // Maps the given polynomial over a small ternary ring
 // Input: m (polynomial)
 // Output: (Φ_1 * S3(m/Φ_1)) (polynomial) HRSS
-void Lift(){
+void Lift() {
     fprintf(stderr, "Error: Function is not implemented.\n");
     exit(EXIT_FAILURE);
 }
