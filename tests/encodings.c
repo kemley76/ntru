@@ -49,7 +49,7 @@ int test_byte_encodings_2() {
     // bits -> bytes -> bits
     // ensures that the input and output are the same
     bitstring_t bits = new_bistring(77); // use weird number to test edge cases
-    memcpy(bits.data, test2, 10);        // load test2 bitstring into bits
+    memcpy(bits.data, test2, sizeof test2); // load test2 bitstring into bits
 
     uint8_t raw_bytes[10];
     bits_to_bytes(bits, raw_bytes);

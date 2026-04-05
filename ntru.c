@@ -5,4 +5,7 @@
 #include "kat.h"
 #include <stdint.h>
 
-int main(int argc, char **argv) { test_all_encodings(); }
+int main(int argc, char **argv) {
+    test_all_encodings();
+    test_all_utils();
+}
