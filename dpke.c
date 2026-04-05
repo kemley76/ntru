@@ -5,7 +5,7 @@
 // input: coins (bit string of length sample_key_bits)
 // output: packed_private_key (byte array of length dpke_private_key_bytes)
 //           packed_public_key (byte array of length dpke_public_key_bytes)
-void DPKE_Key_Pair() {
+DPKE_key_pair_t DPKE_Key_Pair() {
     fprintf(stderr, "Error: Function is not implemented.\n");
     exit(EXIT_FAILURE);
 }
@@ -22,7 +22,7 @@ void DPKE_Public_Key() {
 // input: packed_public_key (byte array of length dpke_public_key_bytes)
 //           packed_rm (byte array of length dpke_plaintext_bytes)
 // output: packed_ciphertext (byte array of length dpke_ciphertext_bytes)
-void DPKE_Encrypt() {
+uint8_t *DPKE_Encrypt() {
     fprintf(stderr, "Error: Function is not implemented.\n");
     exit(EXIT_FAILURE);
 }
