@@ -11,33 +11,47 @@
 // R = ... -> quotient ring using Z and PHI_1*PHI_N
 // S = ... -> quotient ring using Z and PHI_N
 
+// Polynomial type
+// The polynomials should never go above N - 1 degrees
+// Note: find out if the polynomials in other functions
+//      will go over this amount...
+typedef struct poly {
+    int coeffs[N];
+};
+
+// TODO: Check to see if these are needed for inverses
+// x - 1
+// inline constexpr poly PHI_1 = { .coeffs = { [0] = -1, [1] = 1 } };
+// (x - 1) / (x^N - 1)
+// inline constexpr poly PHI_N = { .coeffs = { [0 ... 700 ] = 1 } };
+
 // Finds the non-normative representative of the given polynomial
 // in the R/q quotient ring
-void Rq();
+struct poly* Rq(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the R/q quotient ring
-void Rq_bar();
+struct poly* Rq_bar(poly *a);
 
 // Finds the representative of the given polynomial in the 
 // S/2 quotient ring
-void S2();
+struct poly* S2(poly *a);
 
 // Finds the non-normative representative of the given polynomial
 // in the S/3 quotient ring
-void S3();
+struct poly* S3(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the S/3 quotient ring
-void S3_bar();
+struct poly* S3_bar(poly *a);
 
 // Finds the non-normative representative of the given polynomial
 // in the S/q quotient ring
-void Sq();
+struct poly* Sq(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the S/q quotient ring
-void Sq_bar();
+struct poly* Sq_bar(poly *a);
 
 // Compute inverses in S/2 quotient ring
 void S2_inverse();
