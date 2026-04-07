@@ -21,7 +21,7 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
     bitstring_t fg_bits = pair.front;
     bitstring_t prf_key = pair.back;
 
-    DPKE_key_pair_t key_pair = DPKE_Key_Pair(fg_bits);
+    DPKE_key_pair_t key_pair; // = DPKE_Key_Pair(fg_bits);
 
     uint8_t *packed_private_key = malloc(KEM_PRIVATE_KEY_BYTES);
     uint8_t *packed_public_key = malloc(KEM_PUBLIC_KEY_BYTES);
@@ -57,8 +57,8 @@ KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins) {
 
     bitstring_t bitStringOut =
         bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES);
-    uint8_t *shared_key; // = hash(bitStringOut);
-    uint8_t *packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm);
+    uint8_t *shared_key;        // = hash(bitStringOut);
+    uint8_t *packed_ciphertext; // = DPKE_Encrypt(packed_public_key, packed_rm);
     return (KEM_Encapsualtion_t){.shared_key = shared_key,
                                  .ciphertext = packed_ciphertext};
 }

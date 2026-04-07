@@ -6,8 +6,8 @@
 // in the R/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n))
-struct poly *Rq(poly *a) {
-    struct poly *b = malloc(sizeof(struct poly));
+poly *Rq(poly *a) {
+    poly *b = malloc(sizeof(poly));
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = a->coeffs[i] % Q;
     }
@@ -20,8 +20,8 @@ struct poly *Rq(poly *a) {
 // must be between (-q/2) and (q/2 - 1)
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n))
-struct poly *Rq_bar(poly *a) {
-    struct poly *b = malloc(sizeof(struct poly));
+poly *Rq_bar(poly *a) {
+    poly *b = malloc(sizeof(poly));
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = a->coeffs[i] % Q;
         if (b->coeffs[i] >= (Q / 2)) {
@@ -37,8 +37,8 @@ struct poly *Rq_bar(poly *a) {
 // are the same
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(2,Φ_n))
-struct poly *S2(poly *a) {
-    struct poly *b = malloc(sizeof(struct poly));
+poly *S2(poly *a) {
+    poly *b = malloc(sizeof(poly));
     int last =
         a->coeffs[N - 1] % 2; // TODO: Check to make sure this is how it works
     for (int i = 0; i < N; i++) {
@@ -51,9 +51,9 @@ struct poly *S2(poly *a) {
 // in the S/3 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-struct poly *S3(poly *a) {
-    struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N - 1] % 3;
+poly *S3(poly *a) {
+    poly *b = malloc(sizeof(poly));
+    int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % 3;
     }
@@ -66,9 +66,9 @@ struct poly *S3(poly *a) {
 // must be between -1 and 1
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-struct poly *S3_bar(poly *a) {
-    struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N - 1] % 3;
+poly *S3_bar(poly *a) {
+    poly *b = malloc(sizeof(poly));
+    int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % 3;
         if (b->coeffs[i] > 1) {
@@ -82,9 +82,9 @@ struct poly *S3_bar(poly *a) {
 // in the S/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is not normative)
-struct poly *Sq(poly *a) {
-    struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N - 1] % Q;
+poly *Sq(poly *a) {
+    poly *b = malloc(sizeof(poly));
+    int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % Q;
     }
@@ -97,9 +97,9 @@ struct poly *Sq(poly *a) {
 // must be between (-q/2) and (q/2 - 1)
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is canonical)
-struct poly *Sq_bar(poly *a) {
-    struct poly *b = malloc(sizeof(struct poly));
-    int last a->coeffs[N - 1] % Q;
+poly *Sq_bar(poly *a) {
+    poly *b = malloc(sizeof(poly));
+    int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] - last) % Q;
         if (b->coeffs[i] > (Q / 2)) {

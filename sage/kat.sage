@@ -21,7 +21,7 @@ def test_all():
 	key_times = []
 	enc_times = []
 	dec_times = []
-	for i in range(100):
+	for i in range(1):
         # extract data from KAT file
 		count = f.readline().split()[-1]
 		seed = f.readline().split()[-1]

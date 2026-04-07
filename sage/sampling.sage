@@ -1,4 +1,5 @@
 import constants as c
+load('encodings.sage')
 load('arithmetic.sage')
 # splits up the given bitstream of length twice sample iid bits into f and g bits 
 # then passes each bitstream into a function to create a ternary polynomial and 
@@ -14,12 +15,15 @@ def Sample_fg(fg_bits):
 # splits up the given bitstream of length twice sample iid bits into f and g bits 
 # then passes each bitstream into a function to create a ternary polynomial from that bitstream
 def Sample_rm(rm_bits):
-	assert len(rm_bits) == c.sample_iid_bits * 2
-	r_bits = rm_bits[:c.sample_iid_bits]
-	m_bits = rm_bits[c.sample_iid_bits:]
-	r = Ternary(r_bits)
-	m = Ternary(m_bits)
-	return (r, m)
+    print("RM BITS", bytes_to_hex(bits_to_bytes(rm_bits)))
+    assert len(rm_bits) == c.sample_iid_bits * 2
+    r_bits = rm_bits[:c.sample_iid_bits]
+    m_bits = rm_bits[c.sample_iid_bits:]
+    r = Ternary(r_bits)
+    m = Ternary(m_bits)
+    print("output", bytes_to_hex(pack_S3(r)), bytes_to_hex(pack_S3(m)))
+
+    return (r, m)
 # takes in some bitstream, converts it into integers at 8 bits per int
 # the passes the list of integers to S3_bar to reduce the result down to the S3 ring
 def Ternary(b):
@@ -59,3 +63,11 @@ def Fixed_Type(b):
 
 def correlation(coeffs): # Used to check the non-negative correlation property
     return sum([coeffs[i] * coeffs[i + 1] for i in range(0, len(coeffs) - 1)])
+
+def bytes_to_hex(b):
+    res = ''
+    for byte in b:
+        hash_byte = copy.deepcopy(byte)
+        hash_byte.reverse()
+        res += format(ZZ(hash_byte, 2), '02X')
+    return res

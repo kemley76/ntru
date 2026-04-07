@@ -35,12 +35,12 @@ void unpack_Sq();
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post
 // transformation coefficients, and converts its post s3  coefficients to binary
 // with a given length per number.
-void pack_S3();
+uint8_t *pack_S3(poly *a);
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
 // into sections of length 8 and then conducts a change of basis operation to
 // ternary bytes of length 5. These bytes are used as coefficients of V and
 // rerepresented in S3.
-void unpack_S3();
+poly *unpack_S3(uint8_t *B);
 
 #endif

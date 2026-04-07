@@ -1,4 +1,9 @@
 #include "encodings.h"
+#include "arithmetic.h"
+#include "bitstrings.h"
+#include "constants.h"
+#include <assert.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,16 +82,38 @@ void unpack_Sq() {
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post
 // transformation coefficients, and converts its post s3  coefficients to binary
 // with a given length per number.
-void pack_S3() {
-    fprintf(stderr, "Error: Function is not implemented.\n");
-    exit(EXIT_FAILURE);
+uint8_t *pack_S3(poly *a) {
+    poly *v = S3_bar(a);
+    uint8_t *result = malloc(PACKED_S3_BYTES);
+
+    for (int i = 0; i < (N - 1) / 5; i++) {
+        int c = 0;
+        int power = 1;
+        for (int j = 0; j < 5; j++) {
+            c += power * (v->coeffs[5 * i + j] % 3);
+            power *= 3;
+        }
+        assert(c < (2 << 8));
+        result[i] = c;
+    }
+
+    return result;
 }
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
 // into sections of length 8 and then conducts a change of basis operation to
 // ternary bytes of length 5. These bytes are used as coefficients of V and
 // rerepresented in S3.
-void unpack_S3() {
-    fprintf(stderr, "Error: Function is not implemented.\n");
-    exit(EXIT_FAILURE);
+poly *unpack_S3(uint8_t *B) {
+    poly *v = calloc(1, sizeof(poly)); // create polynomial v = 0
+    for (int i = 0; i < (N - 1) / 5; i++) {
+        uint8_t byte = B[i];
+        uint8_t c[5];
+        for (int j = 0; j < 5; j++) {
+            v->coeffs[5 * i + 1] = byte % 3;
+            byte /= 3;
+        }
+    }
+
+    return S3(v);
 }
