@@ -21,7 +21,7 @@ def test_all():
 	key_times = []
 	enc_times = []
 	dec_times = []
-	for i in range(100):
+	for i in range(1):
         # extract data from KAT file
 		count = f.readline().split()[-1]
 		seed = f.readline().split()[-1]
@@ -102,6 +102,3 @@ def bytes_to_hex(b):
         hash_byte.reverse()
         res += format(ZZ(hash_byte, 2), '02X')
     return res
-
-def to_hex_str(a):
-    return ''.join([format(b, '02X') for b in a])

@@ -15,9 +15,14 @@
 // The polynomials should never go above N - 1 degrees
 // Note: find out if the polynomials in other functions
 //      will go over this amount...
-typedef struct poly {
+typedef struct {
     int coeffs[N];
-};
+} poly;
+
+typedef struct {
+    poly *first;
+    poly *second;
+} poly_pair;
 
 // TODO: Check to see if these are needed for inverses
 // x - 1
@@ -27,31 +32,31 @@ typedef struct poly {
 
 // Finds the non-normative representative of the given polynomial
 // in the R/q quotient ring
-struct poly* Rq(poly *a);
+poly *Rq(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the R/q quotient ring
-struct poly* Rq_bar(poly *a);
+poly *Rq_bar(poly *a);
 
-// Finds the representative of the given polynomial in the 
+// Finds the representative of the given polynomial in the
 // S/2 quotient ring
-struct poly* S2(poly *a);
+poly *S2(poly *a);
 
 // Finds the non-normative representative of the given polynomial
 // in the S/3 quotient ring
-struct poly* S3(poly *a);
+poly *S3(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the S/3 quotient ring
-struct poly* S3_bar(poly *a);
+poly *S3_bar(poly *a);
 
 // Finds the non-normative representative of the given polynomial
 // in the S/q quotient ring
-struct poly* Sq(poly *a);
+poly *Sq(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the S/q quotient ring
-struct poly* Sq_bar(poly *a);
+poly *Sq_bar(poly *a);
 
 // Compute inverses in S/2 quotient ring
 void S2_inverse();
