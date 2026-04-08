@@ -20,7 +20,7 @@ uint8_t get_nth_bit(bitstring_t bits, size_t n);
 
 bitstring_pair_t split_at(bitstring_t original, size_t n);
 
-// Probably don't need this
-// bitstring_t join(bitstring_t a, bitstring_t b);
+// Combines two bistrings together
+bitstring_t join(bitstring_t a, bitstring_t b);
 
 #endif

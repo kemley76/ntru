@@ -28,9 +28,9 @@ KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins);
 // Recovers the shared secret key from the ciphertext using the known private
 // key There is a very small chance of failure, in which Decapsulate will return
 // a random key
-void Decapsulate();
+uint8_t *Decapsulate(uint8_t *packed_private_key, uint8_t *packed_ciphertext);
 
 // Hashes a bitstring using sha3_256
-void hash();
+uint8_t *hash(bitstring_t bits);
 
 #endif

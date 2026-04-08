@@ -28,8 +28,8 @@ bitstring_pair_t split_at(bitstring_t original, size_t n) {
     return (bitstring_pair_t){front_half, back_half};
 }
 
-// Probably didn't need this. Misread some code
-/*bitstring_t join(bitstring_t a, bitstring_t b) {
+// Combines two bistrings together
+bitstring_t join(bitstring_t a, bitstring_t b) {
     assert(a.length % 8 == 0);
     assert(b.length % 8 == 0);
 
@@ -37,4 +37,4 @@ bitstring_pair_t split_at(bitstring_t original, size_t n) {
     memcpy(result.data, a.data, a.length / 8);
     memcpy(result.data + a.length / 8, b.data, b.length / 8);
     return result;
-}*/
+}
