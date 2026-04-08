@@ -45,12 +45,12 @@ poly_pair Sample_rm(bitstring_t rm_bits) {
 // the passes the list of integers to S3_bar to reduce the result down to the S3
 // ring
 poly *Ternary(bitstring_t b) {
-    printf("length %ld\n", b.length);
     assert(b.length == SAMPLE_IID_BITS);
 
-    poly *v = calloc(1, sizeof(poly)); // create polynomial v = 0
+    poly *v = malloc(sizeof(poly)); // create polynomial v = 0
 
     uint8_t *bytes = malloc(SAMPLE_IID_BITS / 8);
+
     bits_to_bytes(b, bytes);
 
     // Original algorithm: This seems like a complicated way of just copying the

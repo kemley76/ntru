@@ -90,10 +90,11 @@ uint8_t *pack_S3(poly *a) {
         int c = 0;
         int power = 1;
         for (int j = 0; j < 5; j++) {
-            c += power * (v->coeffs[5 * i + j] % 3);
+            c += power * ((v->coeffs[5 * i + j] + 9) % 3);
             power *= 3;
         }
         assert(c < (2 << 8));
+        assert(i < PACKED_S3_BYTES);
         result[i] = c;
     }
 
@@ -105,12 +106,13 @@ uint8_t *pack_S3(poly *a) {
 // ternary bytes of length 5. These bytes are used as coefficients of V and
 // rerepresented in S3.
 poly *unpack_S3(uint8_t *B) {
-    poly *v = calloc(1, sizeof(poly)); // create polynomial v = 0
+    poly *v = malloc(sizeof(poly));
+    assert(v != NULL);
     for (int i = 0; i < (N - 1) / 5; i++) {
         uint8_t byte = B[i];
         uint8_t c[5];
         for (int j = 0; j < 5; j++) {
-            v->coeffs[5 * i + 1] = byte % 3;
+            v->coeffs[5 * i + j] = byte % 3;
             byte /= 3;
         }
     }

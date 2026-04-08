@@ -110,6 +110,16 @@ char *sample_bits =
     "02075199773D8ECC6294267B5FE1760E46BCB7F0EE4A6064F7BDAABD6CF1E0725CFD6F831E"
     "8BBF144008F67435D893F296B74023E0DB0CF277285C77172D86543AFF115C";
 
+char *packed_output =
+    "CB7B130DAB1925412FE6025E1969C14A875804B933782D8AB23B9177EEF2869BAB652605A9"
+    "A63D023133B80A508FDCCF265095E85B92092B151FDFEC369B41E2CCDEB001EF37A2593C2C"
+    "837619225BA49B5D4707DB123DED9B7549EFF0799F512657046393713CEFAAAE2F6DB81A50"
+    "502A4199082186797C72B196E392BC081F847FA178E4DFCC3644C2209BDE4C0A6867B19807"
+    "96E49D6343A35D61CA710F8E6D81D34A1812BDA43B3371E86EDDC73047D46CA5E560687B1C"
+    "2D7CB110A2196B5C476F405277C0EAAAB6B4E902DA29C1B111729B7538B106DD22ED47A840"
+    "1F61053873EE6CED69BF1FBE098D9B8E44660F464DD639D2CC20F2BCE3E442B7672EDD66E7"
+    "7E11205B308FB42D2AB9D23F3AB76447AAE199BCDB";
+
 int test_pack_unpack_S3() {
     uint8_t *bytes = malloc(SAMPLE_PLAINTEXT_BITS / 8);
     hex_to_bytes(sample_bits, SAMPLE_PLAINTEXT_BITS / 8, bytes);
@@ -118,10 +128,40 @@ int test_pack_unpack_S3() {
     uint8_t *packed_r = pack_S3(rm.first);
     uint8_t *packed_m = pack_S3(rm.second);
 
-    char *hex_output = malloc(PACKED_S3_BYTES * 2 + 1);
+    char *hex_output = malloc(PACKED_S3_BYTES * 4 + 1);
     bytes_to_hex(packed_r, PACKED_S3_BYTES, hex_output);
-    printf("TEST OUTPUT:\n %s\n", hex_output);
+    bytes_to_hex(packed_m, PACKED_S3_BYTES, hex_output + PACKED_S3_BYTES * 2);
+
+    if (strncmp(hex_output, packed_output, PACKED_S3_BYTES * 2)) {
+        printf("test_pack_unpack_S3: output != expected\n");
+        printf("output:\n%s\n\n", hex_output);
+        printf("expected:\n%s\n\n", packed_output);
+        return 0;
+    }
+
+    poly *unpacked_r = unpack_S3(packed_r);
+    for (int i = 0; i < N - 1; i++) {
+        if (unpacked_r->coeffs[i] != (rm.first->coeffs[i] + 9) % 3) {
+            printf(
+                "test_pack_unpack_S3: unpacking r failed at coefficient %d\n",
+                i);
+            return 0;
+        }
+    }
+    free(unpacked_r);
+
+    poly *unpacked_m = unpack_S3(packed_m);
+    for (int i = 0; i < N - 1; i++) {
+        if (unpacked_m->coeffs[i] != (rm.second->coeffs[i] + 9) % 3) {
+            printf(
+                "test_pack_unpack_S3: unpacking m failed at coefficient %d\n",
+                i);
+            return 0;
+        }
+    }
+    free(unpacked_m);
 
     free(hex_output);
+    printf("test_pack_unpack_S3: test passed\n");
     return 1;
 }
