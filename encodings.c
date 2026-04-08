@@ -82,9 +82,8 @@ void unpack_Sq() {
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post
 // transformation coefficients, and converts its post s3  coefficients to binary
 // with a given length per number.
-uint8_t *pack_S3(poly *a) {
+void pack_S3(poly *a, uint8_t *result) {
     poly *v = S3_bar(a);
-    uint8_t *result = malloc(PACKED_S3_BYTES);
 
     for (int i = 0; i < (N - 1) / 5; i++) {
         int c = 0;
@@ -97,8 +96,6 @@ uint8_t *pack_S3(poly *a) {
         assert(i < PACKED_S3_BYTES);
         result[i] = c;
     }
-
-    return result;
 }
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits

@@ -125,8 +125,10 @@ int test_pack_unpack_S3() {
     hex_to_bytes(sample_bits, SAMPLE_PLAINTEXT_BITS / 8, bytes);
     bitstring_t bits = bytes_to_bits(bytes, SAMPLE_PLAINTEXT_BITS);
     poly_pair rm = Sample_rm(bits);
-    uint8_t *packed_r = pack_S3(rm.first);
-    uint8_t *packed_m = pack_S3(rm.second);
+    uint8_t *packed_r = malloc(PACKED_S3_BYTES);
+    uint8_t *packed_m = malloc(PACKED_S3_BYTES);
+    pack_S3(rm.first, packed_r);
+    pack_S3(rm.second, packed_m);
 
     char *hex_output = malloc(PACKED_S3_BYTES * 4 + 1);
     bytes_to_hex(packed_r, PACKED_S3_BYTES, hex_output);

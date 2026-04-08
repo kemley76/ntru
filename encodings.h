@@ -35,7 +35,7 @@ void unpack_Sq();
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post
 // transformation coefficients, and converts its post s3  coefficients to binary
 // with a given length per number.
-uint8_t *pack_S3(poly *a);
+void pack_S3(poly *a, uint8_t *result);
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
 // into sections of length 8 and then conducts a change of basis operation to
