@@ -2,6 +2,8 @@
 #define ARITHMETIC_H
 
 #include "constants.h"
+#include <stdlib.h>
+#include <string.h>
 
 // From the original definitions:
 // create polynomial rings, quotient rings, and phi_1 and phi_n
@@ -58,11 +60,15 @@ poly *Sq(poly *a);
 // in the S/q quotient ring
 poly *Sq_bar(poly *a);
 
+// add comment
+poly *poly_mul_Rq(poly *a, poly *b);
+poly *poly_mul_S(poly *a, poly *b);
+
 // Compute inverses in S/2 quotient ring
-void S2_inverse();
+poly *S2_inverse(poly *a);
 
 // Compute inverses in S/3 quotient ring
-void S3_inverse();
+poly *S3_inverse(poly *a);
 
 // Compute inverses in S/q quotient ring
 void Sq_inverse();
