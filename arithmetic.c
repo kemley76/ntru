@@ -180,7 +180,7 @@ poly *poly_mul_S(poly *a, poly *b) {
 // output: deg (degree of the polynomial)
 int get_degree(poly *a) {
     for (int i = N - 1; i >= 0; i--) {
-        if (a->coeffs[i] & 1) {
+        if (a->coeffs[i] != 0) {
             return i;
         }
     }
@@ -274,7 +274,6 @@ poly *S3_inverse(poly *a) {
             int tempdeg = deg_r0;
             deg_r0 = deg_r1;
             deg_r1 = tempdeg;
-            continue;
         }
 
         int shift = deg_r0 - deg_r1;
