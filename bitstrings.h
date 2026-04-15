@@ -16,6 +16,8 @@ typedef struct {
 
 bitstring_t new_bistring(size_t n);
 
+void set_nth_bit(bitstring_t bits, size_t n, int val);
+
 uint8_t get_nth_bit(bitstring_t bits, size_t n);
 
 bitstring_pair_t split_at(bitstring_t original, size_t n);
