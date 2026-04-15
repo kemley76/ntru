@@ -11,13 +11,13 @@
 // each bit array is length eight composed of 0 and 1 integers.
 // the order follows [b1 b2 b3 b4 b5 b6 b7 b8 b9] into
 // [[b8 b7 b6 b5 b4 b3 b2 b1] [0 0 0 0 0 0 0 b9]]
-void bits_to_bytes(bitstring_t* bits, uint8_t *bytes) {
+void bits_to_bytes(bitstring_t bits, uint8_t *bytes) {
     
-    int byte_count = (*bits).length / 8;
-    if ((*bits).length % 8 != 0)
+    int byte_count = (bits).length / 8;
+    if ((bits).length % 8 != 0)
         byte_count++;
     for (int i = 0; i < byte_count; i++) {
-        uint8_t r = (*bits).data[i]; // raw bits (lsb first)
+        uint8_t r = (bits).data[i]; // raw bits (lsb first)
                                   // flip the bits to have msb first
         bytes[i] = ((r & 0b1) << 7) | ((r & 0b10) << 5) | ((r & 0b100) << 3) |
                    ((r & 0b1000) << 1) | ((r & 0b10000) >> 1) |
@@ -149,7 +149,7 @@ void pack_Rq0(poly *a, uint8_t *result) {
     // for (int i = 0; i < (((N - 1) * logQ) / 8); i++) {
     //     printf("%02X \n", b.data[i]);
     // }
-    bits_to_bytes(&b, result);
+    bits_to_bytes(b, result);
 }
 
 // takes in some list of bytes and converts these bytes into integer
@@ -283,7 +283,7 @@ void pack_Sq(poly *a, uint8_t *result) {
     // for (int i = 0; i < (((N - 1) * logQ) / 8); i++) {
     //     printf("%02X \n", b.data[i]);
     // }
-    bits_to_bytes(&b, result);
+    bits_to_bytes(b, result);
 }
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits

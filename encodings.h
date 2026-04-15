@@ -13,7 +13,7 @@
 // one?
 
 // converts some string of bits into an array of bit arrays.
-void bits_to_bytes(bitstring_t* bits, uint8_t *bytes);
+void bits_to_bytes(bitstring_t bits, uint8_t *bytes);
 
 // converts some array of bytes into an array of bits.
 bitstring_t bytes_to_bits(uint8_t *bytes, size_t n);
