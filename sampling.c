@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+poly PHI_1 = {.coeffs = {[0] = -1, [1] = 1}};
+
 // splits up the given bitstream of length twice sample iid bits into f and g
 // bits then passes each bitstream into a function to create a ternary
 // polynomial and another function to create a ternary polynomial with
@@ -20,8 +22,7 @@ poly_pair Sample_fg(bitstring_t fg_bits) {
     poly *f = Ternary_Plus(f_bits);
     poly *g_0 = Ternary_Plus(g_bits);
 
-    poly *g;
-    // poly *g = mod_mul(PHI_1, g_0);
+    poly *g = S3(poly_mul_S(&PHI_1, g_0)); // TODO: Idk if S3 is necessary
     return (poly_pair){.first = f, .second = g};
 }
 

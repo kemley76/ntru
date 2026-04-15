@@ -6,6 +6,7 @@
 #include "sampling.h"
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,7 +21,6 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
     DPKE_key_pair_t key_pair = DPKE_Key_Pair(fg_bits);
 
     uint8_t *packed_private_key = malloc(KEM_PRIVATE_KEY_BYTES);
-    uint8_t *packed_public_key = malloc(KEM_PUBLIC_KEY_BYTES);
 
     // combine the DPKE private key and the prf_key
     memcpy(packed_private_key, key_pair.packed_private_key,
@@ -29,7 +29,7 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
                   key_pair.packed_private_key + DPKE_PRIVATE_KEY_BYTES);
 
     return (KEM_Key_Pair_t){.private_key = packed_private_key,
-                            .public_key = packed_public_key};
+                            .public_key = key_pair.packed_public_key};
 }
 
 // Generates a shared secret key and a ciphertext. The ciphertext can be
