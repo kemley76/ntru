@@ -8,6 +8,10 @@
 
 // logq = int(log2(c.q)) -> make in C somehow
 
+// TODO: Standardize the signature of the unpacking functions
+// Do we need to return a new polynomial or pass in the memory for an existing
+// one?
+
 // converts some string of bits into an array of bit arrays.
 void bits_to_bytes(bitstring_t bits, uint8_t *bytes);
 
