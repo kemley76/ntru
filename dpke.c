@@ -16,9 +16,7 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
     poly_pair fg = Sample_fg(coins);
     poly *f = fg.first;
     poly *g = fg.second;
-
-    poly *f_p;
-    // poly *f_p = S3_inverse(f); // TODO
+    poly *f_p = S3_inverse(f);
 
     poly_pair pub_key = DPKE_Public_Key(f, g);
     poly *h = pub_key.first;
@@ -46,18 +44,16 @@ poly_pair DPKE_Public_Key(poly *f, poly *g) {
         g->coeffs[i] *= 3;
     }
 
-    // TODO TODO TODO
-    // poly* v_0 = mod_mul_Sq(G, f);
-    // poly* v_1 = Sq_inverse(v_0);
-    // poly *temp = mod_mul_Rq(v_1, G);
-    // poly *h = mod_mul_Rq(temp, G);
-    // free(temp);
+    poly *v_0 = Sq(poly_mul_S(g, f));
+    poly *v_1; // = Sq_inverse(v_0); // TODO!!!
+    poly *temp = Rq(poly_mul_Rq(v_1, g));
+    poly *h = Rq(poly_mul_Rq(temp, g));
+    free(temp);
 
-    // temp = mod_mul_Rq(v_1, f);
-    // poly *h_q = mod_mul_Rq(temp, f);
+    temp = Rq(poly_mul_Rq(v_1, f));
+    poly *h_q = Rq(poly_mul_Rq(temp, f));
 
-    // return (poly_pair){.first=h, .second=h_q};
-    return (poly_pair){};
+    return (poly_pair){.first = h, .second = h_q};
 }
 
 // input: packed_public_key (byte array of length dpke_public_key_bytes)
@@ -69,11 +65,10 @@ uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
 
     poly *r = S3_bar(unpack_S3(packed_r));
     poly *m_0 = unpack_S3(packed_m);
-    poly *m_1;
-    // poly *m_1 = Lift(m_0);
-    // poly *h = unpack_Rq0(packed_public_key);
-    poly *rh_temp;
-    // poly *rh_temp = mod_mul_Rq(r, h); // TODO consider if this is equivalent
+    poly *m_1; // = Lift(m_0);
+    poly *h;   // = unpack_Rq0(packed_public_key);
+    poly *rh_temp =
+        Rq(poly_mul_Rq(r, h)); // TODO consider if this is equivalent
     // to the spec
     for (int i = 0; i < N; i++) {
         rh_temp->coeffs[i] += m_1->coeffs[i];
@@ -97,15 +92,15 @@ uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     poly *f = S3_bar(unpack_S3(packed_f));
     poly *f_p = unpack_S3(packed_fp);
     poly *h_q; // = unpack_Sq(packed_hq); // TODO
-    poly *v1;  // = Rq_bar(mod_mul_Rq(cipher, f));
-    poly *m_0; // = S3_bar(mod_mul_S3(v_1, f_p));
+    poly *v_1 = Rq_bar(poly_mul_S(cipher, f));
+    poly *m_0 = S3_bar(poly_mul_S(v_1, f_p));
     poly *m_1; // = Lift(m_0);
 
     // cipher - m_1
     for (int i = 0; i < N; i++) {
         cipher->coeffs[i] -= m_1->coeffs[i];
     }
-    poly *r; // = Sq_bar(mod_mul_Sq(cipher, h_q); // TODO
+    poly *r = Sq_bar(poly_mul_S(cipher, h_q)); // TODO
 
     uint8_t *packed_rm = malloc(PACKED_S3_BYTES * 2);
     pack_S3(r, packed_rm);
