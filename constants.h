@@ -4,7 +4,7 @@
 // Constants for the NTRU HPSS 701 parameter set
 #define N 701
 #define Q 8192
-
+#define logQ 13
 #define SAMPLE_IID_BITS 5600
 #define SAMPLE_KEY_BITS 11200
 #define SAMPLE_PLAINTEXT_BITS 11200
