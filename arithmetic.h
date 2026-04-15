@@ -5,18 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// From the original definitions:
-// create polynomial rings, quotient rings, and phi_1 and phi_n
-// Z = ... -> int ring
-// PHI_1 = x - 1
-// PHI_N = ... -> phi_n equation
-// R = ... -> quotient ring using Z and PHI_1*PHI_N
-// S = ... -> quotient ring using Z and PHI_N
-
 // Polynomial type
 // The polynomials should never go above N - 1 degrees
-// Note: find out if the polynomials in other functions
-//      will go over this amount...
 typedef struct {
     int coeffs[N];
 } poly;
@@ -60,8 +50,15 @@ poly *Sq(poly *a);
 // in the S/q quotient ring
 poly *Sq_bar(poly *a);
 
-// add comment
+// Compute polynomial multiplication and modular in R/q
+// Ensure that Rq OR Rq_bar is called outside of this 
+// function to make sure the coefficients are correct
 poly *poly_mul_Rq(poly *a, poly *b);
+
+// Compute polynomial multiplication and modular in S/q
+// Ensure that Sq, Sq_bar, S2, S3, OR S3_bar is called 
+// outside of this function to make sure the coefficients 
+// are correct
 poly *poly_mul_S(poly *a, poly *b);
 
 // Compute inverses in S/2 quotient ring

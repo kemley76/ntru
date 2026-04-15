@@ -40,7 +40,7 @@ poly *Rq_bar(poly *a) {
 // output: b (polynomial in ring Z[x]/(2,Φ_n))
 poly *S2(poly *a) {
     poly *b = calloc(1, sizeof(poly));
-    int last = a->coeffs[N - 1] % 2; // TODO: Check to make sure this is how it works
+    int last = a->coeffs[N - 1] % 2;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = ((a->coeffs[i] - last) % 2 + 2) % 2;
     }
@@ -155,7 +155,6 @@ poly *poly_mul_S(poly *a, poly *b) {
                 index -= N;
             }
 
-            // int product = a->coeffs[i] * b->coeffs[j];
             c->coeffs[index] += (a->coeffs[i] * b->coeffs[j]);
         }
     }
@@ -185,68 +184,6 @@ int get_degree(poly *a) {
 // Compute inverses in S/2 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(2,Φ_n))
-// poly *S2_inverse(poly *a) {
-//     // PHI_N
-//     poly *r0 = calloc(1, sizeof(poly));
-//     for (int i = 0; i < N; i++) {
-//         r0->coeffs[i] = 1;
-//     }
-//     printf("working?");
-
-//     poly *r1 = calloc(1, sizeof(poly));
-//     for (int i = 0; i < N; i++) {
-//         r1->coeffs[i] = abs(a->coeffs[i] % 2);
-//     }
-//     printf("works");
-//     // r1 = *S2(&r1);
-//     poly *s0 = calloc(1, sizeof(poly));
-//     poly *s1 = calloc(1, sizeof(poly));
-//     s1->coeffs[0] = 1;
-
-//     int deg_r0 = get_degree(r0);
-//     int deg_r1 = get_degree(r1);
-//     while (deg_r1 != -1){
-//         if (deg_r0 < deg_r1) {
-//             poly *tempr = r0;
-//             r0 = r1;
-//             r1 = tempr;
-//             poly *temps = s0;
-//             s0 = s1;
-//             s1 = temps;
-//             int tempdeg = deg_r0;
-//             deg_r0 = deg_r1;
-//             deg_r1 = tempdeg;
-//         }
-
-//         int shift = deg_r0 - deg_r1;
-//         for (int i = 0; i <= deg_r1; i++) {
-//             r0->coeffs[i + shift] ^= r1->coeffs[i];
-//         }
-
-//         for (int i = 0; i < N - shift; i++) {
-//             s0->coeffs[i + shift] ^= s1->coeffs[i];
-//         }
-//         deg_r0 = get_degree(r0);
-//         deg_r1 = get_degree(r1);
-//     }
-
-//     if (deg_r0 == 0 && (r0->coeffs[0] & 1)) {
-//         if (s0->coeffs[N-1] == 1) {
-//             for (int i = 0; i < N; i++) s0->coeffs[i] ^= 1;
-//         }
-//         free(r0);
-//         free(r1);
-//         free(s1);
-//         return s0;
-//     }
-
-//     free(r0);
-//     free(r1);
-//     free(s0);
-//     free(s1);
-//     return NULL;
-
-// }
 poly *S2_inverse(poly *a) {
     // poly *a2 = S2(a);
     poly *b = S2(a);
@@ -266,76 +203,6 @@ poly *S2_inverse(poly *a) {
 // Compute inverses in S/3 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-// poly *S3_inverse(poly *a) {
-//     // PHI_N
-//     poly r0;
-//     for (int i = 0; i < N; i++) {
-//         r0.coeffs[i] = 1;
-//     }
-
-//     poly r1 = *a;
-//     r1 = *S3(&r1);
-
-//     poly *s0 = calloc(1, sizeof(poly));
-//     poly *s1 = calloc(1, sizeof(poly));
-//     s1->coeffs[0] = 1;
-
-//     int deg_r0 = get_degree(&r0);
-//     int deg_r1 = get_degree(&r1);
-
-//     while (deg_r1 != -1){
-//         if (deg_r0 < deg_r1) {
-//             poly tempr = r0;
-//             r0 = r1;
-//             r1 = tempr;
-//             poly *temps = s0;
-//             s0 = s1;
-//             s1 = temps;
-//             int tempdeg = deg_r0;
-//             deg_r0 = deg_r1;
-//             deg_r1 = tempdeg;
-//         }
-
-//         int shift = deg_r0 - deg_r1;
-
-//         // Add 1 or add 2 (which is subtract 1)
-//         int factor = (r0.coeffs[deg_r0] * r1.coeffs[deg_r1]) % 3;
-
-//         for (int i = 0; i <= deg_r1; i++) {
-//             r0.coeffs[i + shift] = (r0.coeffs[i + shift] - factor * r1.coeffs[i] + 9) % 3;
-//         }
-
-//         for (int i = 0; i < N; i++) {
-//             if (s1->coeffs[i] != 0) {
-//                 int target_idx = (i + shift) % N;
-//                 s0->coeffs[target_idx] = (s0->coeffs[target_idx] - factor * s1->coeffs[i] + 9) % 3;
-//             }
-//         }
-
-//         deg_r0 = get_degree(&r0);
-//         deg_r1 = get_degree(&r1);
-//     }
-
-//     if (deg_r0 == 0 && r0.coeffs[0] != 0) {
-//         if (r0.coeffs[0] == 2) {
-//             for (int i = 0; i < N; i++) { 
-//                 s0->coeffs[i] = (s0->coeffs[i] * 2) % 3;
-//             }
-//         }
-//         int last = s0->coeffs[N-1];
-//         if (last != 0) {
-//             for (int i = 0; i < N; i++) {
-//                 s0->coeffs[i] = (s0->coeffs[i] - last + 9) % 3;
-//             }
-//         }
-//         free(s1);
-//         return s0;
-//     }
-
-//     free(s0);
-//     free(s1);
-//     return NULL;
-// }
 poly *S3_inverse(poly *a) {
     poly *b = S3(a);
     poly *c;
