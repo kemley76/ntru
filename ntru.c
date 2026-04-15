@@ -41,6 +41,7 @@ int main(int argc, char **argv) {
 
     free(a);
     free(b);
+    free(c);
     return 0;
     // test_all_encodings();
     // test_all_utils();
