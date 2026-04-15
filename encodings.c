@@ -3,7 +3,6 @@
 #include "bitstrings.h"
 #include "constants.h"
 #include <assert.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,94 +50,119 @@ bitstring_t bytes_to_bits(uint8_t *bytes, size_t n) {
 // takes in some polynomial a, finds its representation in the Rq ring, and
 // extracts all coefficients of post rq representation. These coefficients are
 // converted to binary and packed into a list for further operation
-void pack_Rq0(poly* a, uint8_t* result ) {
+void pack_Rq0(poly *a, uint8_t *result) {
     // fprintf(stderr, "Error: Function is not implemented.\n");
     // exit(EXIT_FAILURE);
-    poly* v;
+    poly *v;
     v = Rq_bar(a);
-    bitstring_t b = new_bistring((N-1)*logQ);
-    for (int i = 0 ; i < (N - 1); i++) {
+    bitstring_t b = new_bistring((N - 1) * logQ);
+    for (int i = 0; i < (N - 1); i++) {
         int modRes = v->coeffs[i] % Q;
         int targetByte = (i * logQ) / 8;
-        int targetBit = (i *logQ) % 8;
-        // A the modular division result of a coefficient of v by Q takes log2(Q) (which is 13 in our case) bits to represent. 13 is a yucky number in binary
-        // thanks to the super duper special property of being prime. For memory space's sake we cram a bitstream into
-        // bytes. So we need a clean way to break up a 13 bit number into pieces so that it fits into the tail and starting 
-        // end of bitstream's byte array. Consider the first two bytes of data in bitstream. We'll suppose that we get the coefficient
-        // 1 1011 0001 1001 and the coefficient 0 1101 0011 1100. The first byte we write into data is just the eight most significant bits of the
-        // first coefficient: 1101 1000. The second byte we write is the remaining five bits of the coefficient left shifted to become the most significant
-        // bits of a byte: 1100 1000. 
-        // When we want to write the second coefficient to bitstream we run into a bit more of a problem. We can't just write the eight most significant bits because
-        // we'd overwrite the prior contents of the second byte of datastream. Instead we need to write just the three most significant bits of the coefficient
-        // to the three least significant bits of datastream byte. We get: 1100 1011 from the prior bitstream byte 1100 1000 and the 3 MSBs of current coefficient 0 1101 0011 1100.
-        // Now we can start to fill the third byte of datastream from the eight bits after the three MSBs of the coefficient. That follows immediately as  0100 1111. 
-        // Finally we fill the third byte using the last two bits of the second coefficient as the most significant bits of the datastream byte: 0000 0000. 
+        int targetBit = (i * logQ) % 8;
+        // A the modular division result of a coefficient of v by Q takes
+        // log2(Q) (which is 13 in our case) bits to represent. 13 is a yucky
+        // number in binary thanks to the super duper special property of being
+        // prime. For memory space's sake we cram a bitstream into bytes. So we
+        // need a clean way to break up a 13 bit number into pieces so that it
+        // fits into the tail and starting end of bitstream's byte array.
+        // Consider the first two bytes of data in bitstream. We'll suppose that
+        // we get the coefficient 1 1011 0001 1001 and the coefficient 0 1101
+        // 0011 1100. The first byte we write into data is just the eight most
+        // significant bits of the first coefficient: 1101 1000. The second byte
+        // we write is the remaining five bits of the coefficient left shifted
+        // to become the most significant bits of a byte: 1100 1000. When we
+        // want to write the second coefficient to bitstream we run into a bit
+        // more of a problem. We can't just write the eight most significant
+        // bits because we'd overwrite the prior contents of the second byte of
+        // datastream. Instead we need to write just the three most significant
+        // bits of the coefficient to the three least significant bits of
+        // datastream byte. We get: 1100 1011 from the prior bitstream byte 1100
+        // 1000 and the 3 MSBs of current coefficient 0 1101 0011 1100. Now we
+        // can start to fill the third byte of datastream from the eight bits
+        // after the three MSBs of the coefficient. That follows immediately as
+        // 0100 1111. Finally we fill the third byte using the last two bits of
+        // the second coefficient as the most significant bits of the datastream
+        // byte: 0000 0000.
 
-        // So what rules made this nonsense work? First we need to know which byte we're supposed to work with from the start. We can calculate this value as the number of bits which
-        // have already been written divided by eight: effectively that's log2(Q) times the number of loops divided by eight. Next we need to know which bits have already been 
-        // written to by a prior iteration of this loop. We can find this value by calculating the remainder of the number of bits that have already been written divided by eight. That's just 
-        // i * logQ % 8. We can accomplish our first bit write as the 8-mod result most significant bits of the coefficient as the least significant bits of the datastream byte: this is coefficient >> 13-(i*log2Q % 8).
-        // The second bit write is either the remaining or the following eight. In the case of remaining it's coefficient << (8 - (13 - i*logQ2 % 8)) masked with 0xFF. In the case of the following eight we right shift by
-        // five minus the bits from last stage which is coefficient >> 5-(8-(log2Q % 8)). Finally in a following eight case we have to account for the remainder as 
-        // the most significant bits of a byte which is coefficient << (5-(8-targetBit))). 
+        // So what rules made this nonsense work? First we need to know which
+        // byte we're supposed to work with from the start. We can calculate
+        // this value as the number of bits which have already been written
+        // divided by eight: effectively that's log2(Q) times the number of
+        // loops divided by eight. Next we need to know which bits have already
+        // been written to by a prior iteration of this loop. We can find this
+        // value by calculating the remainder of the number of bits that have
+        // already been written divided by eight. That's just i * logQ % 8. We
+        // can accomplish our first bit write as the 8-mod result most
+        // significant bits of the coefficient as the least significant bits of
+        // the datastream byte: this is coefficient >> 13-(i*log2Q % 8). The
+        // second bit write is either the remaining or the following eight. In
+        // the case of remaining it's coefficient << (8 - (13 - i*logQ2 % 8))
+        // masked with 0xFF. In the case of the following eight we right shift
+        // by five minus the bits from last stage which is coefficient >>
+        // 5-(8-(log2Q % 8)). Finally in a following eight case we have to
+        // account for the remainder as the most significant bits of a byte
+        // which is coefficient << (5-(8-targetBit))).
 
-        int8_t seperatePoint = 13 - targetBit ;
+        int8_t seperatePoint = 13 - targetBit;
 
         if (targetBit + 13 <= 16) {
-            b.data[targetByte] = (b.data[targetByte] | (modRes >> seperatePoint));
+            b.data[targetByte] =
+                (b.data[targetByte] | (modRes >> seperatePoint));
             b.data[targetByte + 1] = modRes << (8 - seperatePoint);
         } else {
-            b.data[targetByte] = (b.data[targetByte] | (modRes >> seperatePoint));
-            b.data[targetByte + 1] = (modRes >> (5-(8-targetBit)));
-            b.data[targetByte + 2] = (modRes << (8-(5-(8-targetBit))));
+            b.data[targetByte] =
+                (b.data[targetByte] | (modRes >> seperatePoint));
+            b.data[targetByte + 1] = (modRes >> (5 - (8 - targetBit)));
+            b.data[targetByte + 2] = (modRes << (8 - (5 - (8 - targetBit))));
         }
     }
     bits_to_bytes(b, result);
     // TODO test this function. I have less than zero confidence in it - Thomas
 }
 
-
 // takes in some list of bytes and converts these bytes into integer
 // coefficients using some given length of bits / coefficient log2q
-void unpack_Rq0(uint8_t* bytes, poly* result) {
+void unpack_Rq0(uint8_t *bytes, poly *result) {
     // fprintf(stderr, "Error: Function is not implemented.\n");
     // exit(EXIT_FAILURE);
-    bitstring_t bits = bytes_to_bits(bytes, ((N-1)*logQ) );
-    poly V = { 0 };
-    for (int i =0 ; i < N ; i++) {
+    bitstring_t bits = bytes_to_bits(bytes, ((N - 1) * logQ));
+    poly V = {0};
+    for (int i = 0; i < N; i++) {
         int c = 0;
-        for (int j = 0 ; j < logQ ; j ++) {
-            c = c | (((int)(get_nth_bit(bits, i*logQ+j))) << j);
+        for (int j = 0; j < logQ; j++) {
+            c = c | (((int)(get_nth_bit(bits, i * logQ + j))) << j);
         }
         V.coeffs[i] = c;
-        V.coeffs[N-1] =  V.coeffs[N-1] - c;
+        V.coeffs[N - 1] = V.coeffs[N - 1] - c;
     }
     result = Rq(&V);
 }
 
-
 // takes in some polynomial a, evalutes a in the ring Sq, extracts its
 // coefficients, and converts its post sq coefficients to binary with a given
 // length per number.
-void pack_Sq(poly* a, uint8_t* result) {
+void pack_Sq(poly *a, uint8_t *result) {
     // fprintf(stderr, "Error: Function is not implemented.\n");
     // exit(EXIT_FAILURE);
 
     poly *V = Sq_bar(a);
-    bitstring_t b = new_bistring((N-1)*logQ);
-    for (int i = 0 ; i < (N - 1); i++) {
+    bitstring_t b = new_bistring((N - 1) * logQ);
+    for (int i = 0; i < (N - 1); i++) {
         int modRes = V->coeffs[i] % Q;
         int targetByte = (i * logQ) / 8;
-        int targetBit = (i *logQ) % 8;
-        int8_t seperatePoint = 13 - targetBit ;
+        int targetBit = (i * logQ) % 8;
+        int8_t seperatePoint = 13 - targetBit;
 
         if (targetBit + 13 <= 16) {
-            b.data[targetByte] = (b.data[targetByte] | (modRes >> seperatePoint));
+            b.data[targetByte] =
+                (b.data[targetByte] | (modRes >> seperatePoint));
             b.data[targetByte + 1] = modRes << (8 - seperatePoint);
         } else {
-            b.data[targetByte] = (b.data[targetByte] | (modRes >> seperatePoint));
-            b.data[targetByte + 1] = (modRes >> (5-(8-targetBit)));
-            b.data[targetByte + 2] = (modRes << (8-(5-(8-targetBit))));
+            b.data[targetByte] =
+                (b.data[targetByte] | (modRes >> seperatePoint));
+            b.data[targetByte + 1] = (modRes >> (5 - (8 - targetBit)));
+            b.data[targetByte + 2] = (modRes << (8 - (5 - (8 - targetBit))));
         }
     }
     bits_to_bytes(b, result);
@@ -147,15 +171,15 @@ void pack_Sq(poly* a, uint8_t* result) {
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
 // into sections of length log2(q) and then passes the result to Sq normative
 // form.
-void unpack_Sq(uint8_t* bytes, poly* result) {
+void unpack_Sq(uint8_t *bytes, poly *result) {
     // fprintf(stderr, "Error: Function is not implemented.\n");
     // exit(EXIT_FAILURE);
-    bitstring_t bits = bytes_to_bits(bytes, ((N-1)*logQ) );
-    poly V = { 0 };
-    for (int i =0 ; i < N ; i++) {
+    bitstring_t bits = bytes_to_bits(bytes, ((N - 1) * logQ));
+    poly V = {0};
+    for (int i = 0; i < N; i++) {
         int c = 0;
-        for (int j = 0 ; j < logQ ; j ++) {
-            c = c | (((int)(get_nth_bit(bits, i*logQ+j))) << j);
+        for (int j = 0; j < logQ; j++) {
+            c = c | (((int)(get_nth_bit(bits, i * logQ + j))) << j);
         }
         V.coeffs[i] = c;
     }

@@ -16,21 +16,21 @@ bitstring_t bytes_to_bits(uint8_t *bytes, size_t n);
 
 // takes in some polynomial a, finds its representation in the Rq ring, and
 // extracts all coefficients of post rq representation.
-void pack_Rq0();
+void pack_Rq0(poly *a, uint8_t *result);
 
 // takes in some list of bytes and converts these bytes into integer
 // coefficients using some given length of bits / coefficient log2q
-void unpack_Rq0();
+void unpack_Rq0(uint8_t *bytes, poly *result);
 
 // takes in some polynomial a, evalutes a in the ring Sq, extracts its
 // coefficients, and converts its post sq coefficients to binary with a given
 // length per number.
-void pack_Sq();
+void pack_Sq(poly *a, uint8_t *result);
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
 // into sections of length log2(q) and then passes the result to Sq normative
 // form.
-void unpack_Sq();
+void unpack_Sq(uint8_t *bytes, poly *result);
 
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post
 // transformation coefficients, and converts its post s3  coefficients to binary
