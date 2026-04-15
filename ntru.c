@@ -2,7 +2,7 @@
 
 #include "./tests/encodings.h"
 #include "./tests/utils.h"
-#include "kat.h"
+#include "./tests/kat.h"
 #include "arithmetic.h"
 #include <stdint.h>
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     
     poly *c = Sq_inverse(b);
     // c = S3(c);
-    print_poly("Rq Result", c); // Should be 10%Q, 11%Q...
+    print_poly("Sq Result", c); // Should be 10%Q, 11%Q...
     
     // 6. Test Case Example: S2 Inverse (Requires specific input)
     // Add tests for S2_inverse, poly_mul_S, etc.

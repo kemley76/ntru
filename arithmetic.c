@@ -160,12 +160,6 @@ poly *poly_mul_S(poly *a, poly *b) {
         }
     }
 
-    // for (int i = 0; i < N; i++) {
-    //     if (c->coeffs[i] < 0) {
-    //         c->coeffs[i] += Q;
-    //     }
-    // }
-
     int last = c->coeffs[N-1];
     for (int i = 0; i < N; i++) {
         c->coeffs[i] = (c->coeffs[i] - last);
@@ -322,31 +316,30 @@ poly *S3_inverse(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(q,Φ_n))
 poly *Sq_inverse(poly *a) {
-    poly check = *S2_inverse(a);
-    if (&check == NULL) {
+    poly *check = S2_inverse(a);
+    if (check == NULL) {
         return NULL;
     }
-    poly v0 = *S2(&check);
+    poly *v0 = S2(check);
+    free(check);
     int t = 1;
     int stop = (int)log2(Q);
 
-    while (t < stop) {
+    while (t < 2) {
         // v0 = Sq(v0 * (2 - a * v0))
         // The (2 - a * v0) stage
-        poly temp = *poly_mul_S(a, &v0);
+        poly *temp = Sq(poly_mul_S(a, v0));
         for (int i = 0; i < N; i++) {
-            // temp.coeffs[i] = 2 - 1*temp.coeffs[i];
-            temp.coeffs[i] *= -1;
+            temp->coeffs[i] *= -1;
         }
-        temp.coeffs[0] += 2;
-        
-        v0 = *Sq(poly_mul_S(&v0, &temp));
+        temp->coeffs[0] += 2;
+
+        v0 = Sq(poly_mul_Rq(v0, temp));
         t *= 2;
+        free(temp);
     }
 
-    poly *b = Sq(&v0);
-
-    return b;
+    return v0;
 }
 
 // Maps the given polynomial over a small ternary ring
@@ -358,7 +351,22 @@ poly *Lift(poly *m) {
     r0->coeffs[0] = -1;
     r0->coeffs[1] = 1;
 
-    poly *b = poly_mul_S(r0, S3_bar(poly_mul_S(m, S3_inverse(r0))));
+    //(PHI_1 * S3_bar(m * S3_inverse(PHI_1)))
+    poly *b = S3_inverse(r0);
+    b = poly_mul_S(m, b);
+    b = S3_bar(b);
+
+    poly *c = calloc(1, sizeof(poly));
+
+    for (int i = 0; i < N - 1; i++) {
+        if (b->coeffs[i] == 0) {
+            continue;
+        }
+        for (int j = 0; j < 2; j++) {
+            c->coeffs[i + j] += (b->coeffs[i] * r0->coeffs[j]);
+        }
+    }
     free(r0);
-    return b;
+    free(b);
+    return c;
 }

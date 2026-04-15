@@ -68,12 +68,12 @@ int test_poly_mul_1() {
     return 1;
 }
 
-void print_poly(const char *name, poly *a) {
-    printf("%s: ", name);
-    for (int i = N; i >= 0; i--) {
-        if (a->coeffs[i]) {
-            printf("%dx^%d + ", a->coeffs[i], i);
-        }
-    }
-    printf("\n");
-}
+// void print_poly(const char *name, poly *a) {
+//     printf("%s: ", name);
+//     for (int i = N; i >= 0; i--) {
+//         if (a->coeffs[i]) {
+//             printf("%dx^%d + ", a->coeffs[i], i);
+//         }
+//     }
+//     printf("\n");
+// }
