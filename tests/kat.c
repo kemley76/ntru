@@ -71,7 +71,8 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
     bytes_to_hex(shared_key, KEM_SHARED_KEY_BITS / 8, actual_ss2);
 
     if (strncmp(pk, actual_pk, KEM_PUBLIC_KEY_BYTES * 2)) {
-        printf("test_kat: public key does not match expected\n");
+        printf("test_kat: public key does not match expected\n%s\n\n%s\n", pk,
+               actual_pk);
         return 0;
     }
 
