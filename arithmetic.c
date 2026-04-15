@@ -22,7 +22,7 @@ poly *Rq(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n))
 poly *Rq_bar(poly *a) {
-    poly *b = malloc(sizeof(poly));
+    poly *b = calloc(1, sizeof(poly));
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = (a->coeffs[i] % Q + Q) % Q;
         if (b->coeffs[i] >= (Q / 2)) {
@@ -39,7 +39,7 @@ poly *Rq_bar(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(2,Φ_n))
 poly *S2(poly *a) {
-    poly *b = malloc(sizeof(poly));
+    poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % 2; // TODO: Check to make sure this is how it works
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = ((a->coeffs[i] - last) % 2 + 2) % 2;
@@ -52,7 +52,7 @@ poly *S2(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
 poly *S3(poly *a) {
-    poly *b = malloc(sizeof(poly));
+    poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = ((a->coeffs[i] - last) % 3 + 3) % 3;
@@ -67,7 +67,7 @@ poly *S3(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
 poly *S3_bar(poly *a) {
-    poly *b = malloc(sizeof(poly));
+    poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = ((a->coeffs[i] - last) % 3 + 3) % 3;
@@ -83,7 +83,7 @@ poly *S3_bar(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is not normative)
 poly *Sq(poly *a) {
-    poly *b = malloc(sizeof(poly));
+    poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = ((a->coeffs[i] - last) % Q + Q) % Q;
@@ -98,7 +98,7 @@ poly *Sq(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is canonical)
 poly *Sq_bar(poly *a) {
-    poly *b = malloc(sizeof(poly));
+    poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
         b->coeffs[i] = ((a->coeffs[i] - last) % Q + Q) % Q;
@@ -323,7 +323,7 @@ poly *Sq_inverse(poly *a) {
     poly *v0 = S2(check);
     free(check);
     int t = 1;
-    int stop = (int)log2(Q);
+    double stop = log2(Q);
 
     while (t < stop) {
         // v0 = Sq(v0 * (2 - a * v0))
