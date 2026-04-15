@@ -1,6 +1,7 @@
 #include "arithmetic.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 // Finds the non-normative representative of the given polynomial
 // in the R/q quotient ring
@@ -320,15 +321,44 @@ poly *S3_inverse(poly *a) {
 // Compute inverses in S/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(q,Φ_n))
-void Sq_inverse() {
-    fprintf(stderr, "Error: Function is not implemented.\n");
-    exit(EXIT_FAILURE);
+poly *Sq_inverse(poly *a) {
+    poly check = *S2_inverse(a);
+    if (&check == NULL) {
+        return NULL;
+    }
+    poly v0 = *S2(&check);
+    int t = 1;
+    int stop = (int)log2(Q);
+
+    while (t < stop) {
+        // v0 = Sq(v0 * (2 - a * v0))
+        // The (2 - a * v0) stage
+        poly temp = *poly_mul_S(a, &v0);
+        for (int i = 0; i < N; i++) {
+            // temp.coeffs[i] = 2 - 1*temp.coeffs[i];
+            temp.coeffs[i] *= -1;
+        }
+        temp.coeffs[0] += 2;
+        
+        v0 = *Sq(poly_mul_S(&v0, &temp));
+        t *= 2;
+    }
+
+    poly *b = Sq(&v0);
+
+    return b;
 }
 
 // Maps the given polynomial over a small ternary ring
 // Input: m (polynomial)
 // Output: (Φ_1 * S3(m/Φ_1)) (polynomial) HRSS
-void Lift() {
-    fprintf(stderr, "Error: Function is not implemented.\n");
-    exit(EXIT_FAILURE);
+poly *Lift(poly *m) {
+    // PHI_1
+    poly *r0 = calloc(1, sizeof(poly));
+    r0->coeffs[0] = -1;
+    r0->coeffs[1] = 1;
+
+    poly *b = poly_mul_S(r0, S3_bar(poly_mul_S(m, S3_inverse(r0))));
+    free(r0);
+    return b;
 }

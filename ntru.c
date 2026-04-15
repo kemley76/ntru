@@ -29,10 +29,10 @@ int main(int argc, char **argv) {
     b->coeffs[0] = -5;
 
     // for (int i = 0; i < N; i++) a->coeffs[i] = i + 10;
-    // print_poly("Original a", a);
+    print_poly("Original a", a);
     print_poly("Original b", b);
     
-    poly *c = S3_inverse(b);
+    poly *c = Sq_inverse(b);
     // c = S3(c);
     print_poly("Rq Result", c); // Should be 10%Q, 11%Q...
     

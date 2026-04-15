@@ -1,4 +1,5 @@
 import constants
+from math import log2
 
 # From the original definitions:
 Z.<x> = PolynomialRing(ZZ)

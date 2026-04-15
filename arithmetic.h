@@ -71,9 +71,9 @@ poly *S2_inverse(poly *a);
 poly *S3_inverse(poly *a);
 
 // Compute inverses in S/q quotient ring
-void Sq_inverse();
+poly *Sq_inverse(poly *a);
 
 // Maps the given polynomial over a small ternary ring
-void Lift();
+poly *Lift(poly *m);
 
 #endif
