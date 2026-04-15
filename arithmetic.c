@@ -334,7 +334,7 @@ poly *Sq_inverse(poly *a) {
         }
         temp->coeffs[0] += 2;
 
-        v0 = Sq(poly_mul_Rq(v0, temp));
+        v0 = Sq(poly_mul_S(v0, temp));
         t *= 2;
         free(temp);
     }
