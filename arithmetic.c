@@ -325,7 +325,7 @@ poly *Sq_inverse(poly *a) {
     int t = 1;
     int stop = (int)log2(Q);
 
-    while (t < 2) {
+    while (t < stop) {
         // v0 = Sq(v0 * (2 - a * v0))
         // The (2 - a * v0) stage
         poly *temp = Sq(poly_mul_S(a, v0));
