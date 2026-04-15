@@ -5,6 +5,7 @@
 #include "encodings.h"
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // input: coins (bit string of length sample_key_bits)
@@ -28,6 +29,14 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
 
     uint8_t *packed_public_key = malloc(PACKED_RQ0_BYTES);
     pack_Rq0(h, packed_public_key);
+    /*printf("HERE\n"); // TODO: figure out why this ain't working
+    for (int i = 0; i < 100;) {
+        printf("---\n");
+        for (int j = 0; j < 13; j++) {
+            printf("HERE: %02x\n", packed_public_key[i]);
+            i++;
+        }
+    }*/
 
     return (DPKE_key_pair_t){.packed_public_key = packed_public_key,
                              .packed_private_key = packed_private_key};
@@ -44,7 +53,7 @@ poly_pair DPKE_Public_Key(poly *f, poly *g) {
     }
 
     poly *v_0 = Sq(poly_mul_S(g, f));
-    poly *v_1; // = Sq_inverse(v_0); // TODO!!!
+    poly *v_1 = Sq_inverse(v_0);
     poly *temp = Rq(poly_mul_Rq(v_1, g));
     poly *h = Rq(poly_mul_Rq(temp, g));
     free(temp);
@@ -64,7 +73,7 @@ uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
 
     poly *r = S3_bar(unpack_S3(packed_r));
     poly *m_0 = unpack_S3(packed_m);
-    poly *m_1; // = Lift(m_0); // TODO
+    poly *m_1 = Lift(m_0);
     poly *h = malloc(sizeof(poly));
     unpack_Rq0(packed_public_key, h);
     poly *rh_temp =
@@ -99,7 +108,7 @@ uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     unpack_Sq(packed_hq, h_q);
     poly *v_1 = Rq_bar(poly_mul_S(cipher, f));
     poly *m_0 = S3_bar(poly_mul_S(v_1, f_p));
-    poly *m_1; // = Lift(m_0); // TODO
+    poly *m_1 = Lift(m_0);
 
     // cipher - m_1
     for (int i = 0; i < N; i++) {
