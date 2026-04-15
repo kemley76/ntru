@@ -21,6 +21,7 @@ int test_all_utils() {
         printf("All util tests passed\n");
     else
         printf("Util test failed\n");
+    return 1;
 }
 
 int test_bytes_to_from_hex() {
@@ -59,9 +60,6 @@ int test_hash() {
     bitstring_t bits = (bitstring_t){.length = 20 * 8, .data = data};
 
     char *output = malloc(33); // hash is 32 + null byte
-    for (int i = 0; i < 5; i++) {
-        printf("bits: %d\n", bits.data[i]);
-    }
     bytes_to_hex(hash(bits), 32, output);
     if (strncmp(output, expected, 40)) {
         printf("test_hash:Hash does not produce correct output\nexpected: "

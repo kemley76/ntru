@@ -107,7 +107,6 @@ poly *unpack_S3(uint8_t *B) {
     assert(v != NULL);
     for (int i = 0; i < (N - 1) / 5; i++) {
         uint8_t byte = B[i];
-        uint8_t c[5];
         for (int j = 0; j < 5; j++) {
             v->coeffs[5 * i + j] = byte % 3;
             byte /= 3;
