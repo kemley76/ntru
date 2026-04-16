@@ -13,13 +13,13 @@
 // output: packed_private_key (byte array of length dpke_private_key_bytes)
 //           packed_public_key (byte array of length dpke_public_key_bytes)
 DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
-    printf("key pair!!!\n");
     assert(coins.length == SAMPLE_KEY_BITS);
     poly_pair fg = Sample_fg(coins);
     poly *f = fg.first;
     poly *g = fg.second;
     poly *f_p = S3_inverse(f);
 
+    // Note that this modifies g to scale by 3
     poly_pair pub_key = DPKE_Public_Key(f, g);
     poly *h = pub_key.first;
     poly *h_q = pub_key.second;
@@ -31,9 +31,10 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
 
     uint8_t *packed_public_key = malloc(PACKED_RQ0_BYTES);
     pack_Rq0(h, packed_public_key);
-    // printf("done\n");
-    // assert(0);
-    // printf("HERE\n"); // TODO: figure out why this ain't working
+    // print_poly("h", h);
+    //  printf("done\n");
+    //  assert(0);
+    //  printf("HERE\n"); // TODO: figure out why this ain't working
     /*for (int i = 0; i < 100;) {
         printf("---\n");
         for (int j = 0; j < 13; j++) {
@@ -52,14 +53,17 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
 //           h_q (polynomial that satisfies Sq(h · hq) = 1)
 poly_pair DPKE_Public_Key(poly *f, poly *g) {
     // G = g * 3
-    for (int i = 0; i < N - 1; i++) {
-        g->coeffs[i] *= 3;
+    poly *G = calloc(1, sizeof(poly));
+
+    for (int i = 0; i < N; i++) {
+        G->coeffs[i] = g->coeffs[i] * 3;
     }
 
-    poly *v_0 = Sq(poly_mul_S(g, f));
+    poly *v_0 = Sq(poly_mul_S(G, f));
+    // print_poly("h", v_0);
     poly *v_1 = Sq_inverse(v_0);
-    poly *temp = Rq(poly_mul_Rq(v_1, g));
-    poly *h = Rq(poly_mul_Rq(temp, g));
+    poly *temp = Rq(poly_mul_Rq(v_1, G));
+    poly *h = Rq(poly_mul_Rq(temp, G));
     free(temp);
 
     temp = Rq(poly_mul_Rq(v_1, f));

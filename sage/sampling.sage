@@ -11,6 +11,7 @@ def Sample_fg(fg_bits):
 	f = Ternary_Plus(f_bits)
 	g_0 = Ternary_Plus(g_bits)
 	g = PHI_1 * g_0
+	#print("smapling G!!!", g)
 	return (f, g)
 # splits up the given bitstream of length twice sample iid bits into f and g bits 
 # then passes each bitstream into a function to create a ternary polynomial from that bitstream

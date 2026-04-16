@@ -57,7 +57,7 @@ poly *S3(poly *a) {
     poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = ((a->coeffs[i] - last) % 3 + 3) % 3;
+        b->coeffs[i] = ((a->coeffs[i] - last) % 3 + 3 * 100) % 3;
     }
     return b;
 }
@@ -87,7 +87,7 @@ poly *Sq(poly *a) {
     poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = ((a->coeffs[i] - last) % Q + Q) % Q;
+        b->coeffs[i] = ((a->coeffs[i] - last + Q * 5) % Q + Q * 5) % Q;
     }
     return b;
 }
@@ -216,6 +216,14 @@ poly *S3_inverse(poly *a) {
     }
 
     b = S3(poly_mul_S(b, poly_mul_S(b, b)));
+
+    // TODO: This seems to be an expensive check. Fix!
+    poly *check = S3(poly_mul_S(a, b));
+    if (check->coeffs[0] == 2) {
+        for (int i = 0; i < N; i++)
+            b->coeffs[i] = (b->coeffs[i] * 2) % 3;
+    }
+
     return b;
 }
 
@@ -259,7 +267,7 @@ poly *Lift(poly *m) {
     r0->coeffs[1] = 1;
 
     //(PHI_1 * S3_bar(m * S3_inverse(PHI_1)))
-    poly *b = malloc(sizeof(poly));
+    poly *b = calloc(1, sizeof(poly));
     for (int i = 0; i < N - 1; i++) {
         switch (i % 3) {
         case 0:
