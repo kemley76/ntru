@@ -1,5 +1,4 @@
 #include "dpke.h"
-#include "./tests/arithmetic.h"
 #include "arithmetic.h"
 #include "bitstrings.h"
 #include "constants.h"
