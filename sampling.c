@@ -81,7 +81,6 @@ poly *Ternary_Plus(bitstring_t b) {
     for (int i = 0; i < N - 1; i += 2) {
         v->coeffs[i] *= s;
     }
-    printf("s %d %d\n", s, t);
 
     return S3_bar(v);
 }

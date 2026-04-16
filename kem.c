@@ -56,14 +56,11 @@ KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins) {
     pack_S3(r, packed_rm);
     pack_S3(m, packed_rm + PACKED_S3_BYTES);
 
-    print_poly("r", m);
-
     bitstring_t bitStringOut =
         bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES);
 
     for (int i = 0; i < DPKE_PLAINTEXT_BYTES; i++) {
         bitStringOut.data[i] = flip_byte(bitStringOut.data[i]);
-        printf("bitstring out: %02X\n", bitStringOut.data[i]);
     }
     uint8_t *shared_key = hash(bitStringOut);
     uint8_t *packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm);
@@ -81,13 +78,23 @@ uint8_t *Decapsulate(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
 
     uint8_t *packed_rm =
         DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext);
-    uint8_t *shared_key =
-        hash(bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES));
+
+    bitstring_t real_bits = bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES);
+    for (int i = 0; i < real_bits.length / 8; i++) {
+        real_bits.data[i] = flip_byte(real_bits.data[i]);
+    }
+
+    uint8_t *shared_key = hash(real_bits);
 
     bitstring_t prf = bytes_to_bits(prf_key, PRF_KEY_BITS);
     bitstring_t cipher =
         bytes_to_bits(packed_ciphertext, 8 * KEM_CIPHERTEXT_BYTES);
-    uint8_t *random_key = hash(join(prf, cipher));
+
+    bitstring_t fake_bits = join(prf, cipher);
+    for (int i = 0; i < fake_bits.length / 8; i++) {
+        fake_bits.data[i] = flip_byte(fake_bits.data[i]);
+    }
+    uint8_t *random_key = hash(fake_bits);
 
     int fail = 0; // TODO TODO TODO handle get failure info from DPKE_Decrypt
     if (fail) {

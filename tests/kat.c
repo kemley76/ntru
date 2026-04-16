@@ -18,7 +18,7 @@ int test_all_kat() {
     char ct[2300];
     char ss[100];
     int passed = 0;
-    for (int i = 0; i < 1 /*00*/; i++) {
+    for (int i = 0; i < 100; i++) {
         fscanf(fptr, "%*[^\n]\n"); // skip count = X
 
         fscanf(fptr, "seed = %s\n", seed);
@@ -30,7 +30,13 @@ int test_all_kat() {
 
         uint8_t *seed_bytes = malloc(SAMPLE_KEY_BITS / 8);
         hex_to_bytes(seed, SAMPLE_KEY_BITS / 8, seed_bytes);
-        passed += test_kat(seed_bytes, pk, sk, ct, ss);
+        int current = test_kat(seed_bytes, pk, sk, ct, ss);
+        if (current)
+            printf("KAT %d passed", i);
+        else
+            printf("KAT %d failed", i);
+
+        passed += current;
     }
     printf("Total KATs passed: %d/100\n", passed);
 
@@ -96,9 +102,9 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
 
     if (strncmp(ss, actual_ss2, KEM_SHARED_KEY_BITS / 8 * 2)) {
         printf("test_kat: shared secret (2) does not match expected\n");
+        printf("shared secret: \n%s\n\n%s/\n", ss, actual_ss2);
         return 0;
     }
 
-    printf("test_kat: passed");
     return 1;
 }
