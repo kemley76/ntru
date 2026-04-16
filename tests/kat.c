@@ -90,6 +90,7 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
 
     if (strncmp(ss, actual_ss1, KEM_SHARED_KEY_BITS / 8 * 2)) {
         printf("test_kat: shared secret (1) does not match expected\n");
+        printf("shared secret: \n%s\n\n%s/\n", ss, actual_ss1);
         return 0;
     }
 

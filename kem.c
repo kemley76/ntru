@@ -56,9 +56,15 @@ KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins) {
     pack_S3(r, packed_rm);
     pack_S3(m, packed_rm + PACKED_S3_BYTES);
 
+    print_poly("r", m);
+
     bitstring_t bitStringOut =
         bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES);
 
+    for (int i = 0; i < DPKE_PLAINTEXT_BYTES; i++) {
+        bitStringOut.data[i] = flip_byte(bitStringOut.data[i]);
+        printf("bitstring out: %02X\n", bitStringOut.data[i]);
+    }
     uint8_t *shared_key = hash(bitStringOut);
     uint8_t *packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm);
 

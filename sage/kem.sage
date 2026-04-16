@@ -29,6 +29,7 @@ def Encapsulate(packed_public_key, coins=None):
     packed_rm = pack_S3(r) + pack_S3(m)
     bitStringOut = bytes_to_bits(packed_rm, 8*c.dpke_plaintext_bytes)
     shared_key = hash(bitStringOut)
+    print(shared_key)
     packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm)
     return (shared_key, packed_ciphertext, m.list())
 
@@ -55,6 +56,7 @@ def hash(B):
     m = hashlib.sha3_256()
     i=0
     while i*8 < len(B):
+        print("hashing??", ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'))
         # converts a chunk of 8 bits into a byte and adds it to the hash function buffer
         m.update(ZZ(B[i*8:i*8+8], 2).to_bytes(1,byteorder='little'))
         i+=1
