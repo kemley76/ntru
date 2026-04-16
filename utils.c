@@ -1,5 +1,5 @@
 #include "bitstrings.h"
-#include <openssl/evp.h>
+#include "fips202.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,10 +25,7 @@ uint8_t *hash(bitstring_t bits) {
         len++;
 
     uint8_t *out_hash = malloc(32);
-    if (!EVP_Q_digest(NULL, "SHA3-256", NULL, bits.data, len, out_hash,
-                      &hash_len)) {
-        printf("error getting hash\n");
-    }
+    sha3_256(out_hash, bits.data, len);
 
     return out_hash;
 }

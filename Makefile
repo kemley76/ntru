@@ -1,5 +1,5 @@
 all:
-	gcc -o ntru *.c ./tests/*.c -lcrypto # might have a hard time linking with librng.so?
+	gcc -o ntru *.c ./tests/*.c
 
 #gcc -Wall -c arithmetic.c dpke.c encodings.c kat.c kem.c ntru.c sampling.c utils.c bitstrings.c
 #cd tests && gcc -Wall -c utils.c encodings.c
