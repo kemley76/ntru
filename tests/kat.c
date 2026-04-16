@@ -77,7 +77,7 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
 
     if (strncmp(pk, actual_pk, KEM_PUBLIC_KEY_BYTES * 2)) {
         printf("test_kat: public key does not match expected\n");
-        // printf("public key wrong: \n%s\n%s\n", pk, actual_pk);
+        printf("public key wrong: \n%s\n%s\n", pk, actual_pk);
         return 0;
     }
 
@@ -89,19 +89,19 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
 
     if (strncmp(ct, actual_ct, KEM_CIPHERTEXT_BYTES * 2)) {
         printf("test_kat: ciphertext does not match expected\n");
-        // printf("ciphertext: \n%s\n\n%s/\n", ct, actual_ct);
+        printf("ciphertext: \n%s\n\n%s/\n", ct, actual_ct);
         return 0;
     }
 
     if (strncmp(ss, actual_ss1, KEM_SHARED_KEY_BITS / 8 * 2)) {
         printf("test_kat: shared secret (1) does not match expected\n");
-        // printf("shared secret: \n%s\n\n%s/\n", ss, actual_ss1);
+        printf("shared secret: \n%s\n\n%s/\n", ss, actual_ss1);
         return 0;
     }
 
     if (strncmp(ss, actual_ss2, KEM_SHARED_KEY_BITS / 8 * 2)) {
         printf("test_kat: shared secret (2) does not match expected\n");
-        // printf("shared secret: \n%s\n\n%s/\n", ss, actual_ss2);
+        printf("shared secret: \n%s\n\n%s/\n", ss, actual_ss2);
         return 0;
     }
 

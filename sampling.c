@@ -23,14 +23,11 @@ poly_pair Sample_fg(bitstring_t fg_bits) {
     poly *f = Ternary_Plus(f_bits);
     poly *g_0 = Ternary_Plus(g_bits);
 
-    // poly *g = poly_mul_S(g_0, &PHI_1); // TODO: Idk if S3 is necessary
-
+    // g = g_0 * PHI_1
     poly *g = malloc(sizeof(poly));
     for (int i = 0; i < N; i++) {
         g->coeffs[i] = g_0->coeffs[(i + N - 1) % N] - g_0->coeffs[i];
     }
-
-    // print_poly("sampling G!!!", g);
 
     return (poly_pair){.first = f, .second = g};
 }
@@ -91,10 +88,4 @@ poly *Ternary_Plus(bitstring_t b) {
     }
 
     return S3_bar(v);
-}
-
-// put comment here
-void correlation() {
-    fprintf(stderr, "Error: Function is not implemented.\n");
-    exit(EXIT_FAILURE);
 }

@@ -26,7 +26,4 @@ poly *Ternary(bitstring_t b);
 // standard version of that polynomial in the S3 ring.
 poly *Ternary_Plus(bitstring_t b);
 
-// put comment here
-void correlation();
-
 #endif

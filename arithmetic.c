@@ -69,9 +69,7 @@ poly *S3(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
 poly *S3_bar(poly *a) {
-    // poly *b = calloc(1, sizeof(poly));
     poly *b = S3(a);
-    // int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
         if (b->coeffs[i] > 1)
             b->coeffs[i] -= 3;
@@ -186,7 +184,6 @@ int get_degree(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(2,Φ_n))
 poly *S2_inverse(poly *a) {
-    // poly *a2 = S2(a);
     poly *b = S2(a);
     poly *c;
 
@@ -268,7 +265,7 @@ poly *Lift(poly *m) {
 
     //(PHI_1 * S3_bar(m * S3_inverse(PHI_1)))
     poly *b = calloc(1, sizeof(poly));
-    for (int i = 0; i < N - 1; i++) {
+    for (int i = 0; i < N - 1; i++) { // Not sure why this works
         switch (i % 3) {
         case 0:
             b->coeffs[i] = 1;
@@ -298,5 +295,4 @@ poly *Lift(poly *m) {
     free(r0);
     free(b);
     return c;
-    // return poly_mul_S(r0, b);
 }

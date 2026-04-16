@@ -6,7 +6,6 @@
 #include "encodings.h"
 #include <assert.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 // input: coins (bit string of length sample_key_bits)
@@ -31,17 +30,6 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
 
     uint8_t *packed_public_key = malloc(PACKED_RQ0_BYTES);
     pack_Rq0(h, packed_public_key);
-    // print_poly("h", h);
-    //  printf("done\n");
-    //  assert(0);
-    //  printf("HERE\n"); // TODO: figure out why this ain't working
-    /*for (int i = 0; i < 100;) {
-        printf("---\n");
-        for (int j = 0; j < 13; j++) {
-            printf("HERE: %02x\n", packed_public_key[i]);
-            i++;
-        }
-    }*/
 
     return (DPKE_key_pair_t){.packed_public_key = packed_public_key,
                              .packed_private_key = packed_private_key};
@@ -83,9 +71,8 @@ uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
     poly *m_0 = unpack_S3(packed_m);
     poly *m_1 = Lift(m_0);
     poly *h = unpack_Rq0(packed_public_key);
-    poly *rh_temp =
-        Rq(poly_mul_Rq(r, h)); // TODO consider if this is equivalent
-    // to the spec
+    poly *rh_temp = Rq(poly_mul_Rq(r, h));
+
     for (int i = 0; i < N; i++) {
         rh_temp->coeffs[i] += m_1->coeffs[i];
     }
