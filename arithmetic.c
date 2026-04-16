@@ -1,7 +1,9 @@
 #include "arithmetic.h"
+#include "./tests/arithmetic.h"
+#include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 // Finds the non-normative representative of the given polynomial
 // in the R/q quotient ring
@@ -67,13 +69,12 @@ poly *S3(poly *a) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
 poly *S3_bar(poly *a) {
-    poly *b = calloc(1, sizeof(poly));
-    int last = a->coeffs[N - 1] % 3;
+    // poly *b = calloc(1, sizeof(poly));
+    poly *b = S3(a);
+    // int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = ((a->coeffs[i] - last) % 3 + 3) % 3;
-        if (b->coeffs[i] > 1) {
+        if (b->coeffs[i] > 1)
             b->coeffs[i] -= 3;
-        }
     }
     return b;
 }
@@ -110,7 +111,7 @@ poly *Sq_bar(poly *a) {
 }
 
 // Compute polynomial multiplication and modular in R/q
-// Ensure that Rq OR Rq_bar is called outside of this 
+// Ensure that Rq OR Rq_bar is called outside of this
 // function to make sure the coefficients are correct
 // input: a and b (two polynomials in ring Z[x])
 // output: c (polynomial in Z[x]/(q,Φ_1*Φ_n))
@@ -136,8 +137,8 @@ poly *poly_mul_Rq(poly *a, poly *b) {
 }
 
 // Compute polynomial multiplication and modular in S/q
-// Ensure that Sq, Sq_bar, S2, S3, OR S3_bar is called 
-// outside of this function to make sure the coefficients 
+// Ensure that Sq, Sq_bar, S2, S3, OR S3_bar is called
+// outside of this function to make sure the coefficients
 // are correct
 // input: a and b (two polynomials in ring Z[x])
 // output: c (polynomial in Z[x]/(q,Φ_n))
@@ -159,12 +160,12 @@ poly *poly_mul_S(poly *a, poly *b) {
         }
     }
 
-    int last = c->coeffs[N-1];
+    int last = c->coeffs[N - 1];
     for (int i = 0; i < N; i++) {
         c->coeffs[i] = (c->coeffs[i] - last);
     }
 
-    // Note to calling function: make sure to call the 
+    // Note to calling function: make sure to call the
     // other S functions or the coefficients will be wrong!
     return c;
 }
@@ -258,7 +259,21 @@ poly *Lift(poly *m) {
     r0->coeffs[1] = 1;
 
     //(PHI_1 * S3_bar(m * S3_inverse(PHI_1)))
-    poly *b = S3_inverse(r0);
+    poly *b = malloc(sizeof(poly));
+    for (int i = 0; i < N - 1; i++) {
+        switch (i % 3) {
+        case 0:
+            b->coeffs[i] = 1;
+            break;
+        case 1:
+            b->coeffs[i] = 0;
+            break;
+        case 2:
+            b->coeffs[i] = 2;
+            break;
+        }
+    }
+
     b = poly_mul_S(m, b);
     b = S3_bar(b);
 
@@ -275,4 +290,5 @@ poly *Lift(poly *m) {
     free(r0);
     free(b);
     return c;
+    // return poly_mul_S(r0, b);
 }

@@ -4,6 +4,7 @@
 #include "dpke.h"
 #include "encodings.h"
 #include "sampling.h"
+#include "tests/arithmetic.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -18,6 +19,10 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
     bitstring_t fg_bits = pair.front;
     bitstring_t prf_key = pair.back;
 
+    /*for (int i = 0; i < PRF_KEY_BITS / 8; i++) {
+        printf("%02X \n", prf_key.data[i]);
+    }*/
+
     DPKE_key_pair_t key_pair = DPKE_Key_Pair(fg_bits);
 
     uint8_t *packed_private_key = malloc(KEM_PRIVATE_KEY_BYTES);
@@ -25,8 +30,11 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
     // combine the DPKE private key and the prf_key
     memcpy(packed_private_key, key_pair.packed_private_key,
            DPKE_PRIVATE_KEY_BYTES);
-    bits_to_bytes(prf_key,
-                  key_pair.packed_private_key + DPKE_PRIVATE_KEY_BYTES);
+    memcpy(packed_private_key + DPKE_PRIVATE_KEY_BYTES, prf_key.data,
+           PRF_KEY_BITS / 8);
+
+    // idk why this one didn't work...
+    // bits_to_bytes(prf_key, packed_private_key + DPKE_PRIVATE_KEY_BYTES);
 
     return (KEM_Key_Pair_t){.private_key = packed_private_key,
                             .public_key = key_pair.packed_public_key};
@@ -50,8 +58,10 @@ KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins) {
 
     bitstring_t bitStringOut =
         bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES);
+
     uint8_t *shared_key = hash(bitStringOut);
     uint8_t *packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm);
+
     return (KEM_Encapsualtion_t){.shared_key = shared_key,
                                  .ciphertext = packed_ciphertext};
 }

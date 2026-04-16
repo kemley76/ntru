@@ -39,6 +39,7 @@ def bytes_to_bits(bytes_in, length):
 # takes in some polynomial a, finds its representation in the Rq ring, and extracts all coefficients of post rq representation. 
 # These coefficients are converted to binary and packed into a list for further operation
 def pack_Rq0(a):
+    #print("H", a)
     assert a in Z, "input is not a polynomial"
     remainder = a % PHI_1
     assert all(coeff % c.q == 0 for coeff in remainder.list()), "a is not equiv to zero"
@@ -48,6 +49,7 @@ def pack_Rq0(a):
     coeffs = v.list()
     coeffs = coeffs + [0] * (c.n - len(coeffs)) # pad to have n coeficients
     for coeff in coeffs[:-1]:
+        #print("coeff", coeff, coeff % c.q)
         b += (coeff % c.q).digits(2, padto=logq)
     result = bits_to_bytes(b)
     assert len(result) == c.packed_rq0_bytes, "result is wrong length"

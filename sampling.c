@@ -1,4 +1,5 @@
 #include "sampling.h"
+#include "./tests/arithmetic.h"
 #include "arithmetic.h"
 #include "constants.h"
 #include "encodings.h"
@@ -22,7 +23,7 @@ poly_pair Sample_fg(bitstring_t fg_bits) {
     poly *f = Ternary_Plus(f_bits);
     poly *g_0 = Ternary_Plus(g_bits);
 
-    poly *g = S3(poly_mul_S(&PHI_1, g_0)); // TODO: Idk if S3 is necessary
+    poly *g = poly_mul_S(g_0, &PHI_1); // TODO: Idk if S3 is necessary
     return (poly_pair){.first = f, .second = g};
 }
 
@@ -48,9 +49,9 @@ poly_pair Sample_rm(bitstring_t rm_bits) {
 poly *Ternary(bitstring_t b) {
     assert(b.length == SAMPLE_IID_BITS);
 
-    poly *v = malloc(sizeof(poly)); // create polynomial v = 0
+    poly *v = calloc(1, sizeof(poly)); // create polynomial v = 0
 
-    uint8_t *bytes = malloc(SAMPLE_IID_BITS / 8);
+    uint8_t *bytes = calloc(1, SAMPLE_IID_BITS / 8);
 
     bits_to_bytes(b, bytes);
 
@@ -58,7 +59,7 @@ poly *Ternary(bitstring_t b) {
     // individual bits into the coefficients??
     int i = 0;
     while (i < N) {
-        v->coeffs[i] = bytes[i]; // Is this really how it would work?
+        v->coeffs[i] = flip_byte(bytes[i]); // Is this really how it would work?
         i++;
     }
 
@@ -70,18 +71,17 @@ poly *Ternary(bitstring_t b) {
 // standard version of that polynomial in the S3 ring.
 poly *Ternary_Plus(bitstring_t b) {
     assert(b.length == SAMPLE_IID_BITS);
-
     poly *v = Ternary(b);
+
     int t = 0;
-    for (int i = 0; i < N - 2; i++) {
-        t += v->coeffs[i] + 1 * v->coeffs[i + 1];
+    for (int i = 0; i <= N - 2; i++) {
+        t += v->coeffs[i] * v->coeffs[i + 1];
     }
     int s = t < 0 ? -1 : 1;
-    int i = 0;
-    while (i < N - 1) {
+    for (int i = 0; i < N - 1; i += 2) {
         v->coeffs[i] *= s;
-        i += 2;
     }
+    printf("s %d %d\n", s, t);
 
     return S3_bar(v);
 }

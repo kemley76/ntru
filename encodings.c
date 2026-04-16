@@ -12,17 +12,12 @@
 // the order follows [b1 b2 b3 b4 b5 b6 b7 b8 b9] into
 // [[b8 b7 b6 b5 b4 b3 b2 b1] [0 0 0 0 0 0 0 b9]]
 void bits_to_bytes(bitstring_t bits, uint8_t *bytes) {
-    
+
     int byte_count = (bits).length / 8;
     if ((bits).length % 8 != 0)
         byte_count++;
     for (int i = 0; i < byte_count; i++) {
-        uint8_t r = (bits).data[i]; // raw bits (lsb first)
-                                  // flip the bits to have msb first
-        bytes[i] = ((r & 0b1) << 7) | ((r & 0b10) << 5) | ((r & 0b100) << 3) |
-                   ((r & 0b1000) << 1) | ((r & 0b10000) >> 1) |
-                   ((r & 0b100000) >> 3) | ((r & 0b1000000) >> 5) |
-                   ((r & 0b10000000) >> 7);
+        bytes[i] = flip_byte(bits.data[i]);
     }
 }
 
@@ -38,14 +33,16 @@ bitstring_t bytes_to_bits(uint8_t *bytes, size_t n) {
         byte_count++;
 
     for (int i = 0; i < byte_count; i++) {
-        uint8_t r = bytes[i];
-        bits.data[i] = ((r & 0b1) << 7) | ((r & 0b10) << 5) |
-                       ((r & 0b100) << 3) | ((r & 0b1000) << 1) |
-                       ((r & 0b10000) >> 1) | ((r & 0b100000) >> 3) |
-                       ((r & 0b1000000) >> 5) | ((r & 0b10000000) >> 7);
+        bits.data[i] = flip_byte(bytes[i]);
     }
 
     return bits;
+}
+
+uint8_t flip_byte(uint8_t b) {
+    return ((b & 0b1) << 7) | ((b & 0b10) << 5) | ((b & 0b100) << 3) |
+           ((b & 0b1000) << 1) | ((b & 0b10000) >> 1) | ((b & 0b100000) >> 3) |
+           ((b & 0b1000000) >> 5) | ((b & 0b10000000) >> 7);
 }
 
 // takes in some polynomial a, finds its representation in the Rq ring, and
@@ -54,11 +51,10 @@ bitstring_t bytes_to_bits(uint8_t *bytes, size_t n) {
 void pack_Rq0(poly *a, uint8_t *result) {
     // fprintf(stderr, "Error: Function is not implemented.\n");
     // exit(EXIT_FAILURE);
-    poly *v;
     // for (int i = 0 ; i < N ; i++){
     //     printf("%d ", (*a).coeffs[i]);
     // }
-    v = Rq_bar(a);
+    poly *v = Rq_bar(a);
     // for (int i = 0 ; i < N ; i++){
     //     if ((*v).coeffs[i] != 0) {
     //         printf("%d ", (*v).coeffs[i]);
@@ -67,10 +63,11 @@ void pack_Rq0(poly *a, uint8_t *result) {
     // printf("finished with non zero coeffs \n\n");
     bitstring_t b = new_bistring((N - 1) * logQ);
     for (int i = 0; i < (N - 1); i++) {
-        int modRes = (*v).coeffs[i] % Q;
-        
-        for (int j = 0 ; j < logQ ; j++) {
-            set_nth_bit(b, (i*logQ+j), ((modRes >> (logQ - j - 1)) & 0x1));
+        int modRes = (v->coeffs[i] + 2 * Q) % Q;
+
+        for (int j = 0; j < logQ; j++) {
+            set_nth_bit(b, (i * logQ + j), (modRes & 0x1));
+            modRes >>= 1;
         }
         // int targetByte = (i * logQ) / 8;
         // int curBit = ((i * logQ) % 8);
@@ -124,24 +121,34 @@ void pack_Rq0(poly *a, uint8_t *result) {
         // uint8_t shiftedByte;
         // if (curBit + 13 <= 16) {
         //     shiftedByte = (uint8_t)(modRes >> (5 + targetBit));
-        //     // printf("unshifted value: %04X shifted value: %04X\n\n", modRes, shiftedByte);
-            
+        //     // printf("unshifted value: %04X shifted value: %04X\n\n",
+        //     modRes, shiftedByte);
+
         //     b.data[targetByte] = b.data[targetByte] | shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X \n", b.data[targetByte], targetByte, (5 + targetBit), modRes, shiftedByte);
-        //     targetBit = (i * logQ) % 8;
-        //     shiftedByte = (uint8_t)(modRes << (targetBit + 3));
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X \n", b.data[targetByte],
+        //     targetByte, (5 + targetBit), modRes, shiftedByte); targetBit = (i
+        //     * logQ) % 8; shiftedByte = (uint8_t)(modRes << (targetBit + 3));
         //     b.data[targetByte + 1] = shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n\n", b.data[targetByte + 1], targetByte+1, (targetBit + 3), modRes, shiftedByte);
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X\n\n", b.data[targetByte +
+        //     1], targetByte+1, (targetBit + 3), modRes, shiftedByte);
         // } else {
         //     shiftedByte = (uint8_t)(modRes >> (seperatePoint));
         //     b.data[targetByte] = b.data[targetByte] | shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n", b.data[targetByte], targetByte, seperatePoint, modRes, shiftedByte);
-        //     shiftedByte = (uint8_t)(modRes >> (seperatePoint - 8));
-        //     b.data[targetByte + 1] = shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n", b.data[targetByte + 1], targetByte+1, (seperatePoint - 8), modRes, shiftedByte);
-        //     shiftedByte = (uint8_t)(modRes << (8 - (seperatePoint - 8)));
-        //     b.data[targetByte + 1] = shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n\n", b.data[targetByte + 2], targetByte+2, (8 - (seperatePoint - 8)), modRes, shiftedByte);
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X\n", b.data[targetByte],
+        //     targetByte, seperatePoint, modRes, shiftedByte); shiftedByte =
+        //     (uint8_t)(modRes >> (seperatePoint - 8)); b.data[targetByte + 1]
+        //     = shiftedByte; printf("Data in byte: %02X, target byte: %d, shift
+        //     amount: %d shifted value: %03X value or'd: %02X\n",
+        //     b.data[targetByte + 1], targetByte+1, (seperatePoint - 8),
+        //     modRes, shiftedByte); shiftedByte = (uint8_t)(modRes << (8 -
+        //     (seperatePoint - 8))); b.data[targetByte + 1] = shiftedByte;
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X\n\n", b.data[targetByte +
+        //     2], targetByte+2, (8 - (seperatePoint - 8)), modRes,
+        //     shiftedByte);
         // }
         // printf("\n\n");
     }
@@ -154,7 +161,7 @@ void pack_Rq0(poly *a, uint8_t *result) {
 
 // takes in some list of bytes and converts these bytes into integer
 // coefficients using some given length of bits / coefficient log2q
-void unpack_Rq0(uint8_t *bytes, poly *result) {
+poly *unpack_Rq0(uint8_t *bytes) {
     // fprintf(stderr, "Error: Function is not implemented.\n");
     // exit(EXIT_FAILURE);
     bitstring_t bits = bytes_to_bits(bytes, ((N - 1) * logQ));
@@ -163,48 +170,49 @@ void unpack_Rq0(uint8_t *bytes, poly *result) {
     // }
     // printf("done printing bitstring\n");
     poly V = {0};
-    for (int i = 0; i < N; i++) {  
+    int total_coeffs = 0;
+    for (int i = 0; i < N; i++) {
         int c = 0;
         int temp = 0;
         for (int j = 0; j < logQ; j++) {
             // printf("target bit: %d \n", i * logQ + j);
-            temp = (((int)(get_nth_bit(bits, i * logQ + j  ))) << logQ - j - 1);
+            temp = (((int)(get_nth_bit(bits, i * logQ + j))) << j);
             // printf("%d ", get_nth_bit(bits, i * logQ + j ));
             c = c | temp;
-            temp =0;
+            temp = 0;
         }
         V.coeffs[i] = c;
-        V.coeffs[N - 1] = V.coeffs[N - 1] - c;
+        total_coeffs += c;
     }
-    for (int i = 0; i < N; i++) {
+    V.coeffs[N - 1] = (Q - total_coeffs) % Q;
+    /*for (int i = 0; i < N; i++) {
         printf("Val of %d coeff of V: %d \n", i, V.coeffs[i]);
-    }
-    result = Rq(&V);
+    }*/
+    return Rq(&V);
 }
 
 // takes in some polynomial a, evalutes a in the ring Sq, extracts its
 // coefficients, and converts its post sq coefficients to binary with a given
 // length per number.
 void pack_Sq(poly *a, uint8_t *result) {
-    // fprintf(stderr, "Error: Function is not implemented.\n");
-    // exit(EXIT_FAILURE);
-    poly *v;
     // for (int i = 0 ; i < N ; i++){
     //     printf("%d ", (*a).coeffs[i]);
     // }
-    v = Sq_bar(a);
+    poly *v = Sq_bar(a);
     // for (int i = 0 ; i < N ; i++){
     //     if ((*v).coeffs[i] != 0) {
     //         printf("%d ", (*v).coeffs[i]);
     //     };
     // }
     // printf("finished with non zero coeffs \n\n");
-    bitstring_t b = new_bistring((N - 1) * logQ);
-    for (int i = 0; i < (N - 1); i++) {
-        int modRes = (*v).coeffs[i] % Q;
-        
-        for (int j = 0 ; j < logQ ; j++) {
-            set_nth_bit(b, (i*logQ+j), ((modRes >> (logQ - j - 1)) & 0x1));
+    bitstring_t b = new_bistring(PACKED_SQ_BYTES * 8);
+    for (int i = 0; i < N - 1; i++) {
+        int modRes = (v->coeffs[i] + 2 * Q) % Q;
+
+        for (int j = 0; j < logQ; j++) {
+            // printf("setting bit %d %d\n", i * logQ + j, (i * logQ + j) / 8);
+            set_nth_bit(b, (i * logQ + j), (modRes & 0x1));
+            modRes >>= 1;
         }
         // int targetByte = (i * logQ) / 8;
         // int curBit = ((i * logQ) % 8);
@@ -258,38 +266,45 @@ void pack_Sq(poly *a, uint8_t *result) {
         // uint8_t shiftedByte;
         // if (curBit + 13 <= 16) {
         //     shiftedByte = (uint8_t)(modRes >> (5 + targetBit));
-        //     // printf("unshifted value: %04X shifted value: %04X\n\n", modRes, shiftedByte);
-            
+        //     // printf("unshifted value: %04X shifted value: %04X\n\n",
+        //     modRes, shiftedByte);
+
         //     b.data[targetByte] = b.data[targetByte] | shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X \n", b.data[targetByte], targetByte, (5 + targetBit), modRes, shiftedByte);
-        //     targetBit = (i * logQ) % 8;
-        //     shiftedByte = (uint8_t)(modRes << (targetBit + 3));
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X \n", b.data[targetByte],
+        //     targetByte, (5 + targetBit), modRes, shiftedByte); targetBit = (i
+        //     * logQ) % 8; shiftedByte = (uint8_t)(modRes << (targetBit + 3));
         //     b.data[targetByte + 1] = shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n\n", b.data[targetByte + 1], targetByte+1, (targetBit + 3), modRes, shiftedByte);
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X\n\n", b.data[targetByte +
+        //     1], targetByte+1, (targetBit + 3), modRes, shiftedByte);
         // } else {
         //     shiftedByte = (uint8_t)(modRes >> (seperatePoint));
         //     b.data[targetByte] = b.data[targetByte] | shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n", b.data[targetByte], targetByte, seperatePoint, modRes, shiftedByte);
-        //     shiftedByte = (uint8_t)(modRes >> (seperatePoint - 8));
-        //     b.data[targetByte + 1] = shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n", b.data[targetByte + 1], targetByte+1, (seperatePoint - 8), modRes, shiftedByte);
-        //     shiftedByte = (uint8_t)(modRes << (8 - (seperatePoint - 8)));
-        //     b.data[targetByte + 1] = shiftedByte;
-        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d shifted value: %03X value or'd: %02X\n\n", b.data[targetByte + 2], targetByte+2, (8 - (seperatePoint - 8)), modRes, shiftedByte);
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X\n", b.data[targetByte],
+        //     targetByte, seperatePoint, modRes, shiftedByte); shiftedByte =
+        //     (uint8_t)(modRes >> (seperatePoint - 8)); b.data[targetByte + 1]
+        //     = shiftedByte; printf("Data in byte: %02X, target byte: %d, shift
+        //     amount: %d shifted value: %03X value or'd: %02X\n",
+        //     b.data[targetByte + 1], targetByte+1, (seperatePoint - 8),
+        //     modRes, shiftedByte); shiftedByte = (uint8_t)(modRes << (8 -
+        //     (seperatePoint - 8))); b.data[targetByte + 1] = shiftedByte;
+        //     printf("Data in byte: %02X, target byte: %d, shift amount: %d
+        //     shifted value: %03X value or'd: %02X\n\n", b.data[targetByte +
+        //     2], targetByte+2, (8 - (seperatePoint - 8)), modRes,
+        //     shiftedByte);
         // }
         // printf("\n\n");
     }
 
-    // for (int i = 0; i < (((N - 1) * logQ) / 8); i++) {
-    //     printf("%02X \n", b.data[i]);
-    // }
     bits_to_bytes(b, result);
 }
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
 // into sections of length log2(q) and then passes the result to Sq normative
 // form.
-void unpack_Sq(uint8_t *bytes, poly *result) {
+poly *unpack_Sq(uint8_t *bytes) {
     // fprintf(stderr, "Error: Function is not implemented.\n");
     // exit(EXIT_FAILURE);
     bitstring_t bits = bytes_to_bits(bytes, ((N - 1) * logQ));
@@ -301,7 +316,7 @@ void unpack_Sq(uint8_t *bytes, poly *result) {
         }
         V.coeffs[i] = c;
     }
-    result = Sq(&V);
+    return Sq(&V);
 }
 
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post

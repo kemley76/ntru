@@ -1,4 +1,5 @@
 #include "dpke.h"
+#include "./tests/arithmetic.h"
 #include "arithmetic.h"
 #include "bitstrings.h"
 #include "constants.h"
@@ -12,6 +13,7 @@
 // output: packed_private_key (byte array of length dpke_private_key_bytes)
 //           packed_public_key (byte array of length dpke_public_key_bytes)
 DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
+    printf("key pair!!!\n");
     assert(coins.length == SAMPLE_KEY_BITS);
     poly_pair fg = Sample_fg(coins);
     poly *f = fg.first;
@@ -29,8 +31,10 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
 
     uint8_t *packed_public_key = malloc(PACKED_RQ0_BYTES);
     pack_Rq0(h, packed_public_key);
-    /*printf("HERE\n"); // TODO: figure out why this ain't working
-    for (int i = 0; i < 100;) {
+    // printf("done\n");
+    // assert(0);
+    // printf("HERE\n"); // TODO: figure out why this ain't working
+    /*for (int i = 0; i < 100;) {
         printf("---\n");
         for (int j = 0; j < 13; j++) {
             printf("HERE: %02x\n", packed_public_key[i]);
@@ -74,8 +78,7 @@ uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
     poly *r = S3_bar(unpack_S3(packed_r));
     poly *m_0 = unpack_S3(packed_m);
     poly *m_1 = Lift(m_0);
-    poly *h = malloc(sizeof(poly));
-    unpack_Rq0(packed_public_key, h);
+    poly *h = unpack_Rq0(packed_public_key);
     poly *rh_temp =
         Rq(poly_mul_Rq(r, h)); // TODO consider if this is equivalent
     // to the spec
@@ -99,13 +102,11 @@ uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     uint8_t *packed_fp = packed_private_key + PACKED_S3_BYTES;
     uint8_t *packed_hq = packed_private_key + PACKED_S3_BYTES * 2;
 
-    poly *cipher = malloc(sizeof(poly));
-    unpack_Rq0(packed_ciphertext, cipher);
+    poly *cipher = unpack_Rq0(packed_ciphertext);
     poly *f = S3_bar(unpack_S3(packed_f));
     poly *f_p = unpack_S3(packed_fp);
 
-    poly *h_q = malloc(sizeof(poly));
-    unpack_Sq(packed_hq, h_q);
+    poly *h_q = unpack_Sq(packed_hq);
     poly *v_1 = Rq_bar(poly_mul_S(cipher, f));
     poly *m_0 = S3_bar(poly_mul_S(v_1, f_p));
     poly *m_1 = Lift(m_0);

@@ -24,7 +24,7 @@ void pack_Rq0(poly *a, uint8_t *result);
 
 // takes in some list of bytes and converts these bytes into integer
 // coefficients using some given length of bits / coefficient log2q
-void unpack_Rq0(uint8_t *bytes, poly *result);
+poly *unpack_Rq0(uint8_t *bytes);
 
 // takes in some polynomial a, evalutes a in the ring Sq, extracts its
 // coefficients, and converts its post sq coefficients to binary with a given
@@ -34,7 +34,7 @@ void pack_Sq(poly *a, uint8_t *result);
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
 // into sections of length log2(q) and then passes the result to Sq normative
 // form.
-void unpack_Sq(uint8_t *bytes, poly *result);
+poly *unpack_Sq(uint8_t *bytes);
 
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post
 // transformation coefficients, and converts its post s3  coefficients to binary
@@ -46,5 +46,7 @@ void pack_S3(poly *a, uint8_t *result);
 // ternary bytes of length 5. These bytes are used as coefficients of V and
 // rerepresented in S3.
 poly *unpack_S3(uint8_t *B);
+
+uint8_t flip_byte(uint8_t b);
 
 #endif
