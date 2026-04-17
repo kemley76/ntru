@@ -18,6 +18,7 @@ void print_poly(const char *name, poly *a) {
 }
 
 int main(int argc, char **argv) {
+    printf("Starting tests!!\n");
     test_all_encodings();
     test_all_utils();
     test_all_arithmetic();
