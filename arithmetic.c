@@ -75,6 +75,8 @@ void S3_bar(poly *a) {
 void Sq(poly *a) {
     int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
+        // TODO: Fix this silly way of finding the
+        // moudulus when there could be a negative number
         a->coeffs[i] = ((a->coeffs[i] - last + Q * 5) % Q + Q * 5) % Q;
     }
 }
@@ -198,15 +200,17 @@ void S3_inverse(poly *a, poly *out) {
     poly c = {0};
 
     // initialize b = S3(a)
-    S3(a);
-    memcpy(&b, a, sizeof(poly));
+    poly other_a;
+    memcpy(&other_a, a, sizeof(poly));
+    S3(&other_a);
+    memcpy(&b, &other_a, sizeof(poly));
 
     for (int i = 1; i < N - 2; i++) {
         // c = b ^ 3
         poly_mul_S(&b, &b, &c);
         poly_mul_S(&c, &b, &c);
         S3(&c);
-        poly_mul_S(&c, a, &b);
+        poly_mul_S(&c, &other_a, &b);
         S3(&b);
     }
 
@@ -218,7 +222,7 @@ void S3_inverse(poly *a, poly *out) {
 
     // TODO: This seems to be an expensive check. Fix!
     poly check = {0};
-    poly_mul_S(a, &b, &check);
+    poly_mul_S(&other_a, &b, &check);
     S3(&check);
     if (check.coeffs[0] == 2) {
         for (int i = 0; i < N; i++)
@@ -232,9 +236,10 @@ void S3_inverse(poly *a, poly *out) {
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(q,Φ_n))
 void Sq_inverse(poly *a, poly *out) {
-
     poly v0 = {0};
-    S2_inverse(a, &v0);
+    poly other_a; // other_a is needed since S2_inverse modifies a;
+    memcpy(&other_a, a, sizeof(poly));
+    S2_inverse(&other_a, &v0);
     /*if (v0 == NULL) {
         return;
     }*/
