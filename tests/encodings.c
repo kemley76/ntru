@@ -51,7 +51,7 @@ uint8_t test2[10] = {0x1A, 0x2C, 0x4A, 0xFA, 0x33,
 int test_byte_encodings_2() {
     // bits -> bytes -> bits
     // ensures that the input and output are the same
-    bitstring_t bits = new_bistring(77); // use weird number to test edge cases
+    bitstring_t bits = new_bitstring(77); // use weird number to test edge cases
     memcpy(bits.data, test2, sizeof test2); // load test2 bitstring into bits
 
     uint8_t raw_bytes[10];
@@ -124,14 +124,16 @@ int test_pack_unpack_S3() {
     uint8_t *bytes = malloc(SAMPLE_PLAINTEXT_BITS / 8);
     hex_to_bytes(sample_bits, SAMPLE_PLAINTEXT_BITS / 8, bytes);
     bitstring_t bits = bytes_to_bits(bytes, SAMPLE_PLAINTEXT_BITS);
+    free(bytes);
 
-    poly_pair rm = Sample_rm(bits);
-    uint8_t *packed_r = malloc(PACKED_S3_BYTES);
-    uint8_t *packed_m = malloc(PACKED_S3_BYTES);
-    pack_S3(rm.first, packed_r);
-    pack_S3(rm.second, packed_m);
+    poly r = {0}, m = {0};
+    Sample_rm(bits, &r, &m);
+    uint8_t packed_r[PACKED_S3_BYTES] = {0};
+    uint8_t packed_m[PACKED_S3_BYTES] = {0};
+    pack_S3(&r, packed_r);
+    pack_S3(&m, packed_m);
 
-    char *hex_output = malloc(PACKED_S3_BYTES * 4 + 1);
+    char hex_output[PACKED_S3_BYTES * 4 + 1];
     bytes_to_hex(packed_r, PACKED_S3_BYTES, hex_output);
     bytes_to_hex(packed_m, PACKED_S3_BYTES, hex_output + PACKED_S3_BYTES * 2);
 
@@ -142,29 +144,30 @@ int test_pack_unpack_S3() {
         return 0;
     }
 
-    poly *unpacked_r = unpack_S3(packed_r);
+    poly unpacked_r = {0};
+    unpack_S3(packed_r, &unpacked_r);
+
     for (int i = 0; i < N - 1; i++) {
-        if (unpacked_r->coeffs[i] != (rm.first->coeffs[i] + 9) % 3) {
+        if (unpacked_r.coeffs[i] != (r.coeffs[i] + 9) % 3) {
             printf(
                 "test_pack_unpack_S3: unpacking r failed at coefficient %d\n",
                 i);
             return 0;
         }
     }
-    free(unpacked_r);
 
-    poly *unpacked_m = unpack_S3(packed_m);
+    poly unpacked_m = {0};
+    unpack_S3(packed_m, &unpacked_m);
+
     for (int i = 0; i < N - 1; i++) {
-        if (unpacked_m->coeffs[i] != (rm.second->coeffs[i] + 9) % 3) {
+        if (unpacked_m.coeffs[i] != (m.coeffs[i] + 9) % 3) {
             printf(
                 "test_pack_unpack_S3: unpacking m failed at coefficient %d\n",
                 i);
             return 0;
         }
     }
-    free(unpacked_m);
 
-    free(hex_output);
     printf("test_pack_unpack_S3: test passed\n");
     return 1;
 }

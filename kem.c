@@ -44,17 +44,16 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
 // used with the private key to recover the same shared secret key
 KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins) {
     if (!coins.length) {
-        coins = new_bistring(SAMPLE_PLAINTEXT_BITS);
+        coins = new_bitstring(SAMPLE_PLAINTEXT_BITS);
         // TODO: fill bits of coins randomly!
     }
 
-    poly_pair pair = Sample_rm(coins);
-    poly *r = pair.first;
-    poly *m = pair.second;
+    poly r, m;
+    Sample_rm(coins, &r, &m);
 
     uint8_t *packed_rm = malloc(PACKED_S3_BYTES * 2);
-    pack_S3(r, packed_rm);
-    pack_S3(m, packed_rm + PACKED_S3_BYTES);
+    pack_S3(&r, packed_rm);
+    pack_S3(&m, packed_rm + PACKED_S3_BYTES);
 
     bitstring_t bitStringOut =
         bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES);

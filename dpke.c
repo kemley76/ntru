@@ -12,19 +12,18 @@
 //           packed_public_key (byte array of length dpke_public_key_bytes)
 DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
     assert(coins.length == SAMPLE_KEY_BITS);
-    poly_pair fg = Sample_fg(coins);
-    poly *f = fg.first;
-    poly *g = fg.second;
-    poly *f_p = S3_inverse(f);
+    poly f = {0}, g = {0}, f_p;
+    Sample_fg(coins, &f, &g);
+    S3_inverse(&f, &f_p);
 
     // Note that this modifies g to scale by 3
-    poly_pair pub_key = DPKE_Public_Key(f, g);
+    poly_pair pub_key = DPKE_Public_Key(&f, &g);
     poly *h = pub_key.first;
     poly *h_q = pub_key.second;
 
     uint8_t *packed_private_key = malloc(PACKED_S3_BYTES * 2 + PACKED_SQ_BYTES);
-    pack_S3(f, packed_private_key);
-    pack_S3(f_p, packed_private_key + PACKED_S3_BYTES);
+    pack_S3(&f, packed_private_key);
+    pack_S3(&f_p, packed_private_key + PACKED_S3_BYTES);
     pack_Sq(h_q, packed_private_key + PACKED_S3_BYTES * 2);
 
     uint8_t *packed_public_key = malloc(PACKED_RQ0_BYTES);
@@ -46,15 +45,26 @@ poly_pair DPKE_Public_Key(poly *f, poly *g) {
         G->coeffs[i] = g->coeffs[i] * 3;
     }
 
-    poly *v_0 = Sq(poly_mul_S(G, f));
+    poly v_0;
+    poly_mul_S(G, f, &v_0);
+    Sq(&v_0);
+
     // print_poly("h", v_0);
-    poly *v_1 = Sq_inverse(v_0);
-    poly *temp = Rq(poly_mul_Rq(v_1, G));
-    poly *h = Rq(poly_mul_Rq(temp, G));
+    poly v_1;
+    Sq_inverse(&v_0, &v_1);
+    poly *temp = poly_mul_Rq(&v_1, G);
+    Rq(temp);
+
+    poly *h = poly_mul_Rq(temp, G);
+    Rq(h);
+
     free(temp);
 
-    temp = Rq(poly_mul_Rq(v_1, f));
-    poly *h_q = Rq(poly_mul_Rq(temp, f));
+    temp = poly_mul_Rq(&v_1, f);
+    Rq(temp);
+
+    poly *h_q = poly_mul_Rq(temp, f);
+    Rq(h_q);
 
     return (poly_pair){.first = h, .second = h_q};
 }
@@ -66,16 +76,21 @@ uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
     uint8_t *packed_r = packed_rm;
     uint8_t *packed_m = packed_rm + PACKED_S3_BYTES;
 
-    poly *r = S3_bar(unpack_S3(packed_r));
-    poly *m_0 = unpack_S3(packed_m);
-    poly *m_1 = Lift(m_0);
-    poly *h = unpack_Rq0(packed_public_key);
-    poly *rh_temp = Rq(poly_mul_Rq(r, h));
+    poly r, m_0, h;
+    unpack_S3(packed_r, &r);
+    S3_bar(&r);
+
+    unpack_S3(packed_m, &m_0);
+    poly *m_1 = Lift(&m_0);
+    unpack_Rq0(packed_public_key, &h);
+    poly *rh_temp = poly_mul_Rq(&r, &h);
+    Rq(rh_temp);
 
     for (int i = 0; i < N; i++) {
         rh_temp->coeffs[i] += m_1->coeffs[i];
     }
-    poly *cipher = Rq(rh_temp);
+    poly *cipher = rh_temp;
+    Rq(cipher);
 
     uint8_t *packed_ciphertext = malloc(PACKED_RQ0_BYTES);
     pack_Rq0(cipher, packed_ciphertext);
@@ -92,24 +107,33 @@ uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     uint8_t *packed_fp = packed_private_key + PACKED_S3_BYTES;
     uint8_t *packed_hq = packed_private_key + PACKED_S3_BYTES * 2;
 
-    poly *cipher = unpack_Rq0(packed_ciphertext);
-    poly *f = S3_bar(unpack_S3(packed_f));
-    poly *f_p = unpack_S3(packed_fp);
+    poly cipher, f, f_p, h_q, v_1, m_0,
+        r; // TODO: Is there a way to not use so much stack space??
+    unpack_Rq0(packed_ciphertext, &cipher);
 
-    poly *h_q = unpack_Sq(packed_hq);
-    poly *v_1 = Rq_bar(poly_mul_S(cipher, f));
-    poly *m_0 = S3_bar(poly_mul_S(v_1, f_p));
-    poly *m_1 = Lift(m_0);
+    unpack_S3(packed_f, &f);
+    S3_bar(&f);
+
+    unpack_S3(packed_fp, &f_p);
+
+    unpack_Sq(packed_hq, &h_q);
+    poly_mul_S(&cipher, &f, &v_1);
+    Rq_bar(&v_1);
+
+    poly_mul_S(&v_1, &f_p, &m_0);
+    S3_bar(&m_0);
+    poly *m_1 = Lift(&m_0);
 
     // cipher - m_1
     for (int i = 0; i < N; i++) {
-        cipher->coeffs[i] -= m_1->coeffs[i];
+        cipher.coeffs[i] -= m_1->coeffs[i];
     }
-    poly *r = Sq_bar(poly_mul_S(cipher, h_q));
+    poly_mul_S(&cipher, &h_q, &r);
+    Sq_bar(&r);
 
     uint8_t *packed_rm = malloc(PACKED_S3_BYTES * 2);
-    pack_S3(r, packed_rm);
-    pack_S3(m_0, packed_rm + PACKED_S3_BYTES);
+    pack_S3(&r, packed_rm);
+    pack_S3(&m_0, packed_rm + PACKED_S3_BYTES);
 
     // TODO TODO TODO
     // Check if there is a decryption failure. Is possible but very very rare

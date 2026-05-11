@@ -2,19 +2,16 @@
 #include "./tests/arithmetic.h"
 #include <assert.h>
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 // Finds the non-normative representative of the given polynomial
 // in the R/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n))
-poly *Rq(poly *a) {
-    poly *b = calloc(1, sizeof(poly));
+void Rq(poly *a) {
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = (a->coeffs[i] % Q + Q) % Q;
+        a->coeffs[i] = (a->coeffs[i] % Q + Q) % Q;
     }
-    return b;
 }
 
 // Finds the canonical representative of the given polynomial
@@ -23,15 +20,13 @@ poly *Rq(poly *a) {
 // must be between (-q/2) and (q/2 - 1)
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_1*Φ_n))
-poly *Rq_bar(poly *a) {
-    poly *b = calloc(1, sizeof(poly));
+void Rq_bar(poly *a) {
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = (a->coeffs[i] % Q + Q) % Q;
-        if (b->coeffs[i] >= (Q / 2)) {
-            b->coeffs[i] -= Q;
+        a->coeffs[i] = (a->coeffs[i] % Q + Q) % Q;
+        if (a->coeffs[i] >= (Q / 2)) {
+            a->coeffs[i] -= Q;
         }
     }
-    return b;
 }
 
 // Finds the representative of the given polynomial in the
@@ -40,26 +35,23 @@ poly *Rq_bar(poly *a) {
 // are the same
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(2,Φ_n))
-poly *S2(poly *a) {
-    poly *b = calloc(1, sizeof(poly));
+void S2(poly *a) {
+    // poly *b = calloc(1, sizeof(poly));
     int last = a->coeffs[N - 1] % 2;
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = ((a->coeffs[i] - last) % 2 + 2) % 2;
+        a->coeffs[i] = ((a->coeffs[i] - last) % 2 + 2) % 2;
     }
-    return b;
 }
 
 // Finds the non-normative representative of the given polynomial
 // in the S/3 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-poly *S3(poly *a) {
-    poly *b = calloc(1, sizeof(poly));
+void S3(poly *a) {
     int last = a->coeffs[N - 1] % 3;
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = ((a->coeffs[i] - last) % 3 + 3 * 100) % 3;
+        a->coeffs[i] = ((a->coeffs[i] - last) % 3 + 3 * 100) % 3;
     }
-    return b;
 }
 
 // Finds the canonical representative of the given polynomial
@@ -68,26 +60,23 @@ poly *S3(poly *a) {
 // must be between -1 and 1
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-poly *S3_bar(poly *a) {
-    poly *b = S3(a);
+void S3_bar(poly *a) {
+    S3(a);
     for (int i = 0; i < N; i++) {
-        if (b->coeffs[i] > 1)
-            b->coeffs[i] -= 3;
+        if (a->coeffs[i] > 1)
+            a->coeffs[i] -= 3;
     }
-    return b;
 }
 
 // Finds the non-normative representative of the given polynomial
 // in the S/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is not normative)
-poly *Sq(poly *a) {
-    poly *b = calloc(1, sizeof(poly));
+void Sq(poly *a) {
     int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = ((a->coeffs[i] - last + Q * 5) % Q + Q * 5) % Q;
+        a->coeffs[i] = ((a->coeffs[i] - last + Q * 5) % Q + Q * 5) % Q;
     }
-    return b;
 }
 
 // Finds the canonical representative of the given polynomial
@@ -140,7 +129,7 @@ poly *poly_mul_Rq(poly *a, poly *b) {
 // are correct
 // input: a and b (two polynomials in ring Z[x])
 // output: c (polynomial in Z[x]/(q,Φ_n))
-poly *poly_mul_S(poly *a, poly *b) {
+void poly_mul_S(poly *a, poly *b, poly *out) {
     poly *c = calloc(1, sizeof(poly));
 
     for (int i = 0; i < N; i++) {
@@ -165,7 +154,8 @@ poly *poly_mul_S(poly *a, poly *b) {
 
     // Note to calling function: make sure to call the
     // other S functions or the coefficients will be wrong!
-    return c;
+    memcpy(out, c, sizeof(poly));
+    free(c);
 }
 
 // Helper function to determine the degree of a polynomial
@@ -183,75 +173,96 @@ int get_degree(poly *a) {
 // Compute inverses in S/2 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(2,Φ_n))
-poly *S2_inverse(poly *a) {
-    poly *b = S2(a);
-    poly *c;
+void S2_inverse(poly *a, poly *out) {
+    S2(a);
+    poly b, c;
+    memcpy(&b, a, sizeof(poly));
 
     for (int i = 1; i < N - 2; i++) {
-        c = S2(poly_mul_S(b, b));
-        free(b);
-        b = S2(poly_mul_S(c, S2(a)));
-        free(c);
+        poly_mul_S(&b, &b, &c);
+        S2(&c);
+        poly_mul_S(&c, a, &b);
+        S2(&b);
     }
 
-    b = S2(poly_mul_S(b, b));
-    return b;
+    poly_mul_S(&b, &b, &b);
+    S2(&b);
+    memcpy(out, &b, sizeof(poly));
 }
 
 // Compute inverses in S/3 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
-poly *S3_inverse(poly *a) {
-    poly *b = S3(a);
-    poly *c;
+void S3_inverse(poly *a, poly *out) {
+    poly b;
+    poly c = {0};
+
+    // initialize b = S3(a)
+    S3(a);
+    memcpy(&b, a, sizeof(poly));
 
     for (int i = 1; i < N - 2; i++) {
-        c = S3(poly_mul_S(b, poly_mul_S(b, b)));
-        free(b);
-        b = S3(poly_mul_S(c, S3(a)));
-        free(c);
+        // c = b ^ 3
+        poly_mul_S(&b, &b, &c);
+        poly_mul_S(&c, &b, &c);
+        S3(&c);
+        poly_mul_S(&c, a, &b);
+        S3(&b);
     }
 
-    b = S3(poly_mul_S(b, poly_mul_S(b, b)));
+    // b = b ^ 3
+    poly temp = {0};
+    poly_mul_S(&b, &b, &temp);
+    poly_mul_S(&temp, &b, &b);
+    S3(&b);
 
     // TODO: This seems to be an expensive check. Fix!
-    poly *check = S3(poly_mul_S(a, b));
-    if (check->coeffs[0] == 2) {
+    poly check = {0};
+    poly_mul_S(a, &b, &check);
+    S3(&check);
+    if (check.coeffs[0] == 2) {
         for (int i = 0; i < N; i++)
-            b->coeffs[i] = (b->coeffs[i] * 2) % 3;
+            b.coeffs[i] = (b.coeffs[i] * 2) % 3;
     }
 
-    return b;
+    memcpy(out, &b, sizeof(poly));
 }
 
 // Compute inverses in S/q quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(q,Φ_n))
-poly *Sq_inverse(poly *a) {
-    poly *check = S2_inverse(a);
-    if (check == NULL) {
-        return NULL;
-    }
-    poly *v0 = S2(check);
-    free(check);
+void Sq_inverse(poly *a, poly *out) {
+
+    poly v0 = {0};
+    S2_inverse(a, &v0);
+    /*if (v0 == NULL) {
+        return;
+    }*/
+
+    S2(&v0);
     int t = 1;
     int stop = (int)log2(Q);
 
     while (t < stop) {
         // v0 = Sq(v0 * (2 - a * v0))
         // The (2 - a * v0) stage
-        poly *temp = Sq(poly_mul_S(a, v0));
-        for (int i = 0; i < N; i++) {
-            temp->coeffs[i] *= -1;
-        }
-        temp->coeffs[0] += 2;
+        poly temp = {0};
+        poly_mul_S(a, &v0, &temp);
+        Sq(&temp);
 
-        v0 = Sq(poly_mul_S(v0, temp));
+        for (int i = 0; i < N; i++) {
+            temp.coeffs[i] *= -1;
+        }
+        temp.coeffs[0] += 2;
+
+        poly_mul_S(&v0, &temp, &v0);
+        Sq(&v0);
+
         t *= 2;
-        free(temp);
     }
 
-    return Sq(v0);
+    Sq(&v0);
+    memcpy(out, &v0, sizeof(poly));
 }
 
 // Maps the given polynomial over a small ternary ring
@@ -279,8 +290,8 @@ poly *Lift(poly *m) {
         }
     }
 
-    b = poly_mul_S(m, b);
-    b = S3_bar(b);
+    poly_mul_S(m, b, b);
+    S3_bar(b);
 
     poly *c = calloc(1, sizeof(poly));
 

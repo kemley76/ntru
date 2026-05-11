@@ -19,14 +19,15 @@ int test_all_kat() {
     FILE *fptr = fopen("PQCkemKAT_1450.rsp", "r");
     fscanf(fptr, "%*[^\n]\n"); // skips to the next line
 
-    char seed[150];
-    char pk[2300];
-    char sk[3000];
-    char ct[2300];
-    char ss[100];
     int passed = 0;
 
     for (int i = 0; i < 100; i++) {
+        char seed[150] = {0};
+        char pk[2300] = {0};
+        char sk[3000] = {0};
+        char ct[2300] = {0};
+        char ss[100] = {0};
+
         fscanf(fptr, "%*[^\n]\n"); // skip count = X
 
         fscanf(fptr, "seed = %s\n", seed);
@@ -35,7 +36,7 @@ int test_all_kat() {
         fscanf(fptr, "ct = %s\n", ct);
         fscanf(fptr, "ss = %s\n", ss);
 
-        uint8_t *seed_bytes = malloc(SAMPLE_KEY_BITS / 8);
+        uint8_t seed_bytes[SAMPLE_KEY_BITS / 8] = {0};
         hex_to_bytes(seed, SAMPLE_KEY_BITS / 8, seed_bytes);
         int current = test_kat(seed_bytes, pk, sk, ct, ss);
         if (current)
@@ -61,7 +62,7 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
 
     // fg_bits
     int size = SAMPLE_KEY_BITS / 8;
-    bitstring_t bits = new_bistring(SAMPLE_KEY_BITS + PRF_KEY_BITS);
+    bitstring_t bits = new_bitstring(SAMPLE_KEY_BITS + PRF_KEY_BITS);
     int result = randombytes(bits.data, SAMPLE_KEY_BITS / 8);
     assert(result == 0);
 
@@ -75,7 +76,7 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
     total_keygen_time += (end.tv_sec - start.tv_sec) * 1000000000 +
                          (end.tv_nsec - start.tv_nsec);
 
-    bitstring_t coins = new_bistring(SAMPLE_PLAINTEXT_BITS);
+    bitstring_t coins = new_bitstring(SAMPLE_PLAINTEXT_BITS);
     result = randombytes(coins.data, SAMPLE_PLAINTEXT_BITS / 8);
     assert(result == 0);
 
@@ -101,6 +102,11 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
     bytes_to_hex(capsule.ciphertext, KEM_CIPHERTEXT_BYTES, actual_ct);
     bytes_to_hex(capsule.shared_key, KEM_SHARED_KEY_BITS / 8, actual_ss1);
     bytes_to_hex(shared_key, KEM_SHARED_KEY_BITS / 8, actual_ss2);
+    free(keypair.public_key);
+    free(keypair.private_key);
+    free(capsule.ciphertext);
+    free(capsule.shared_key);
+    free(shared_key);
 
     if (strncmp(pk, actual_pk, KEM_PUBLIC_KEY_BYTES * 2)) {
         printf("test_kat: public key does not match expected\n");

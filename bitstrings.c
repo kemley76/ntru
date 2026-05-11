@@ -1,22 +1,24 @@
 #include "bitstrings.h"
 #include <assert.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // n is the number of bits
-bitstring_t new_bistring(size_t n) {
+bitstring_t new_bitstring(size_t n) {
     // the + 1 is just in case n is not evenly divisible by 8
-    return (bitstring_t){.data = calloc(n / 8 + 1, sizeof(uint8_t)), .length = n};
+    return (bitstring_t){.data = calloc(n / 8 + 1, sizeof(uint8_t)),
+                         .length = n};
 }
 
 uint8_t get_nth_bit(bitstring_t bits, size_t n) {
-    // printf("Target byte in get bit: %d and target bit within that byte: %d", n / 8, n%8);
-    return (bits.data[n / 8] >> 7-(n % 8)) & 0x1;
+    // printf("Target byte in get bit: %d and target bit within that byte: %d",
+    // n / 8, n%8);
+    return (bits.data[n / 8] >> 7 - (n % 8)) & 0x1;
 }
-void set_nth_bit(bitstring_t bits, size_t n, int val){
-    bits.data[n/8] = bits.data[n/8] | (val << (7 - (n %8)));
+void set_nth_bit(bitstring_t bits, size_t n, int val) {
+    bits.data[n / 8] = bits.data[n / 8] | (val << (7 - (n % 8)));
 }
 
 // splits a bitstring of n + m bits in one n of bits and one of m bits
@@ -27,7 +29,9 @@ bitstring_pair_t split_at(bitstring_t original, size_t n) {
     // boundary. This assumes that the original won't get freed until we're done
     // with these
     bitstring_t front_half = (bitstring_t){.data = original.data, .length = n};
-    bitstring_t back_half = new_bistring(original.length - n);
+    // bitstring_t back_half = new_bitstring(original.length - n);
+    bitstring_t back_half =
+        (bitstring_t){.data = original.data + n, .length = original.length - n};
     back_half.data = original.data + (n / 8);
 
     return (bitstring_pair_t){front_half, back_half};
@@ -38,7 +42,7 @@ bitstring_t join(bitstring_t a, bitstring_t b) {
     assert(a.length % 8 == 0);
     assert(b.length % 8 == 0);
 
-    bitstring_t result = new_bistring(a.length + b.length);
+    bitstring_t result = new_bitstring(a.length + b.length);
     memcpy(result.data, a.data, a.length / 8);
     memcpy(result.data + a.length / 8, b.data, b.length / 8);
     return result;

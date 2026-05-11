@@ -14,7 +14,7 @@ typedef struct {
     bitstring_t back;
 } bitstring_pair_t;
 
-bitstring_t new_bistring(size_t n);
+bitstring_t new_bitstring(size_t n);
 
 void set_nth_bit(bitstring_t bits, size_t n, int val);
 
