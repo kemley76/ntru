@@ -2,6 +2,7 @@
 #include "./tests/arithmetic.h"
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // Finds the non-normative representative of the given polynomial
@@ -273,42 +274,36 @@ void Sq_inverse(poly *a, poly *out) {
 // Maps the given polynomial over a small ternary ring
 // Input: m (polynomial)
 // Output: (Φ_1 * S3(m/Φ_1)) (polynomial) HRSS
-poly *Lift(poly *m) {
+void Lift(poly *m, poly *out) {
     // PHI_1
-    poly *r0 = calloc(1, sizeof(poly));
-    r0->coeffs[0] = -1;
-    r0->coeffs[1] = 1;
+    poly r0 = {0}, b = {0};
+    r0.coeffs[0] = -1;
+    r0.coeffs[1] = 1;
 
     //(PHI_1 * S3_bar(m * S3_inverse(PHI_1)))
-    poly *b = calloc(1, sizeof(poly));
     for (int i = 0; i < N - 1; i++) { // Not sure why this works
         switch (i % 3) {
         case 0:
-            b->coeffs[i] = 1;
+            b.coeffs[i] = 1;
             break;
         case 1:
-            b->coeffs[i] = 0;
+            b.coeffs[i] = 0;
             break;
         case 2:
-            b->coeffs[i] = 2;
+            b.coeffs[i] = 2;
             break;
         }
     }
 
-    poly_mul_S(m, b, b);
-    S3_bar(b);
-
-    poly *c = calloc(1, sizeof(poly));
+    poly_mul_S(m, &b, &b);
+    S3_bar(&b);
 
     for (int i = 0; i < N - 1; i++) {
-        if (b->coeffs[i] == 0) {
+        if (b.coeffs[i] == 0) {
             continue;
         }
         for (int j = 0; j < 2; j++) {
-            c->coeffs[i + j] += (b->coeffs[i] * r0->coeffs[j]);
+            out->coeffs[i + j] += (b.coeffs[i] * r0.coeffs[j]);
         }
     }
-    free(r0);
-    free(b);
-    return c;
 }

@@ -71,6 +71,6 @@ void S3_inverse(poly *a, poly *out);
 void Sq_inverse(poly *a, poly *out);
 
 // Maps the given polynomial over a small ternary ring
-poly *Lift(poly *m);
+void Lift(poly *m, poly *out);
 
 #endif

@@ -76,18 +76,18 @@ uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
     uint8_t *packed_r = packed_rm;
     uint8_t *packed_m = packed_rm + PACKED_S3_BYTES;
 
-    poly r, m_0, h;
+    poly r, m_0, m_1, h;
     unpack_S3(packed_r, &r);
     S3_bar(&r);
 
     unpack_S3(packed_m, &m_0);
-    poly *m_1 = Lift(&m_0);
+    Lift(&m_0, &m_1);
     unpack_Rq0(packed_public_key, &h);
     poly *rh_temp = poly_mul_Rq(&r, &h);
     Rq(rh_temp);
 
     for (int i = 0; i < N; i++) {
-        rh_temp->coeffs[i] += m_1->coeffs[i];
+        rh_temp->coeffs[i] += m_1.coeffs[i];
     }
     poly *cipher = rh_temp;
     Rq(cipher);
@@ -107,7 +107,7 @@ uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     uint8_t *packed_fp = packed_private_key + PACKED_S3_BYTES;
     uint8_t *packed_hq = packed_private_key + PACKED_S3_BYTES * 2;
 
-    poly cipher, f, f_p, h_q, v_1, m_0,
+    poly cipher, f, f_p, h_q, v_1, m_0, m_1,
         r; // TODO: Is there a way to not use so much stack space??
     unpack_Rq0(packed_ciphertext, &cipher);
 
@@ -122,11 +122,11 @@ uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
 
     poly_mul_S(&v_1, &f_p, &m_0);
     S3_bar(&m_0);
-    poly *m_1 = Lift(&m_0);
+    Lift(&m_0, &m_1);
 
     // cipher - m_1
     for (int i = 0; i < N; i++) {
-        cipher.coeffs[i] -= m_1->coeffs[i];
+        cipher.coeffs[i] -= m_1.coeffs[i];
     }
     poly_mul_S(&cipher, &h_q, &r);
     Sq_bar(&r);
