@@ -8,4 +8,5 @@ int test_poly_inv_s2();
 int test_2_poly_inv_s2();
 int test_poly_inv_sq();
 int test_2_poly_inv_sq();
+int test_lift();
 void print_poly(const char *name, poly *a);
