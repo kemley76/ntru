@@ -11,6 +11,7 @@
 int test_all_arithmetic() {
     int status = 1;
     status &= test_poly_mul_1();
+    status &= test_poly_inv_s3();
 
     if (status) {
         printf("All arithmeitc tests passed\n");
@@ -65,6 +66,35 @@ int test_poly_mul_1() {
     }
 
     printf("test_poly_mul_1: test passed\n");
+    return 1;
+}
+
+char *expected_inverse_1 =
+    "82A7DF037754C2371148D56CD4B228C6C1D2A425DE6E4F603D9CCD2526AA2675F1BF38E212"
+    "35477D7D52B6BF6796648741E84082B31D6052E83CA3CD6797339A10D71D69DEEBE5BC94A7"
+    "11B7CC0B3A141B76530188BF4ABAA75287B9C1C0578389CE65A8A0205724795FA91A4CAE9F"
+    "A45DE3DDC09D22AC5C81A9994C3D19A6A958EEBF80A1760DDDC3368FBD";
+
+int test_poly_inv_s3() {
+    uint8_t *bytes1 = malloc(PACKED_S3_BYTES);
+    hex_to_bytes(hex1, PACKED_S3_BYTES, bytes1);
+
+    poly *p1 = unpack_S3(bytes1);
+    poly *result = S3(S3_inverse(p1));
+
+    uint8_t *packed = malloc(PACKED_S3_BYTES);
+    pack_S3(result, packed);
+
+    char *hex_output = malloc(PACKED_S3_BYTES * 2 + 1);
+    bytes_to_hex(packed, PACKED_S3_BYTES, hex_output);
+
+    if (strncmp(expected_inverse_1, hex_output, PACKED_S3_BYTES * 2)) {
+        printf("test_poly_inv_s3: inverse does not match\n%s\n!=%s\n",
+               expected_product, hex_output);
+        return 0;
+    }
+
+    printf("test_poly_inv_s3: test passed\n");
     return 1;
 }
 
