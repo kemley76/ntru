@@ -24,53 +24,53 @@ typedef struct {
 
 // Finds the non-normative representative of the given polynomial
 // in the R/q quotient ring
-poly *Rq(poly *a);
+void Rq(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the R/q quotient ring
-poly *Rq_bar(poly *a);
+void Rq_bar(poly *a);
 
 // Finds the representative of the given polynomial in the
 // S/2 quotient ring
-poly *S2(poly *a);
+void S2(poly *a);
 
 // Finds the non-normative representative of the given polynomial
 // in the S/3 quotient ring
-poly *S3(poly *a);
+void S3(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the S/3 quotient ring
-poly *S3_bar(poly *a);
+void S3_bar(poly *a);
 
 // Finds the non-normative representative of the given polynomial
 // in the S/q quotient ring
-poly *Sq(poly *a);
+void Sq(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the S/q quotient ring
-poly *Sq_bar(poly *a);
+void Sq_bar(poly *a);
 
 // Compute polynomial multiplication and modular in R/q
-// Ensure that Rq OR Rq_bar is called outside of this 
+// Ensure that Rq OR Rq_bar is called outside of this
 // function to make sure the coefficients are correct
-poly *poly_mul_Rq(poly *a, poly *b);
+void poly_mul_Rq(poly *a, poly *b, poly *out);
 
 // Compute polynomial multiplication and modular in S/q
-// Ensure that Sq, Sq_bar, S2, S3, OR S3_bar is called 
-// outside of this function to make sure the coefficients 
+// Ensure that Sq, Sq_bar, S2, S3, OR S3_bar is called
+// outside of this function to make sure the coefficients
 // are correct
-poly *poly_mul_S(poly *a, poly *b);
+void poly_mul_S(poly *a, poly *b, poly *out);
 
 // Compute inverses in S/2 quotient ring
-poly *S2_inverse(poly *a);
+void S2_inverse(poly *a, poly *out);
 
 // Compute inverses in S/3 quotient ring
-poly *S3_inverse(poly *a);
+void S3_inverse(poly *a, poly *out);
 
 // Compute inverses in S/q quotient ring
-poly *Sq_inverse(poly *a);
+void Sq_inverse(poly *a, poly *out);
 
 // Maps the given polynomial over a small ternary ring
-poly *Lift(poly *m);
+void Lift(poly *m, poly *out);
 
 #endif

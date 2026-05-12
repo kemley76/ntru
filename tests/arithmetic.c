@@ -50,22 +50,32 @@ char *expected_product =
 // p2 = unpack_S3([list(reversed(Integer(a).digits(2, padto=8))) for
 // 	  a in list(bytes.fromhex(hex2))])
 int test_poly_mul_1() {
-    uint8_t *bytes1 = malloc(PACKED_S3_BYTES);
-    uint8_t *bytes2 = malloc(PACKED_S3_BYTES);
+    uint8_t bytes1[PACKED_S3_BYTES];
+    uint8_t bytes2[PACKED_S3_BYTES];
     hex_to_bytes(hex1, PACKED_S3_BYTES, bytes1);
     hex_to_bytes(hex2, PACKED_S3_BYTES, bytes2);
 
-    poly *p1 = unpack_S3(bytes1);
-    poly *p2 = unpack_S3(bytes2);
-    poly *result = S3(poly_mul_S(p1, p2));
+    poly p1 = {0};
+    poly p2 = {0};
+    poly result;
+
+    unpack_S3(bytes1, &p1);
+    unpack_S3(bytes2, &p2);
+
+    poly_mul_S(&p1, &p2, &result);
+    S3(&result);
 
     uint8_t *packed = malloc(PACKED_S3_BYTES);
-    pack_S3(result, packed);
+    pack_S3(&result, packed);
 
     char *hex_output = malloc(PACKED_S3_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_S3_BYTES, hex_output);
+    free(packed);
 
-    if (strncmp(expected_product, hex_output, PACKED_S3_BYTES * 2)) {
+    int comparison = strncmp(expected_product, hex_output, PACKED_S3_BYTES * 2);
+    free(hex_output);
+
+    if (comparison) {
         printf("test_poly_mul_1: product does not match\n%s\n!=%s\n",
                expected_product, hex_output);
         return 0;
@@ -85,11 +95,14 @@ int test_poly_inv_s3() {
     uint8_t *bytes1 = malloc(PACKED_S3_BYTES);
     hex_to_bytes(hex1, PACKED_S3_BYTES, bytes1);
 
-    poly *p1 = unpack_S3(bytes1);
-    poly *result = S3(S3_inverse(p1));
+    poly p1 = {0}, result = {0};
+    unpack_S3(bytes1, &p1);
+
+    S3_inverse(&p1, &result);
+    S3(&result);
 
     uint8_t *packed = malloc(PACKED_S3_BYTES);
-    pack_S3(result, packed);
+    pack_S3(&result, packed);
 
     char *hex_output = malloc(PACKED_S3_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_S3_BYTES, hex_output);
@@ -114,11 +127,14 @@ int test_2_poly_inv_s3() {
     uint8_t *bytes1 = malloc(PACKED_S3_BYTES);
     hex_to_bytes(hex2, PACKED_S3_BYTES, bytes1);
 
-    poly *p1 = unpack_S3(bytes1);
-    poly *result = S3(S3_inverse(p1));
+    poly p1 = {0}, result = {0};
+    unpack_S3(bytes1, &p1);
+
+    S3_inverse(&p1, &result);
+    S3(&result);
 
     uint8_t *packed = malloc(PACKED_S3_BYTES);
-    pack_S3(result, packed);
+    pack_S3(&result, packed);
 
     char *hex_output = malloc(PACKED_S3_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_S3_BYTES, hex_output);
@@ -143,12 +159,17 @@ int test_poly_inv_s2() {
     uint8_t *bytes1 = malloc(PACKED_S3_BYTES);
     hex_to_bytes(hex1, PACKED_S3_BYTES, bytes1);
 
-    poly *p1 =
-        S2(unpack_S3(bytes1)); // not sure if this is actually invertable in S2
-    poly *result = S2(S2_inverse(p1));
+    poly p1 = {0}, result = {0};
+    unpack_S3(bytes1, &p1);
+
+    S2(&p1);
+    S2_inverse(&p1, &result);
+    S2(&result);
 
     uint8_t *packed = malloc(PACKED_S3_BYTES);
-    pack_S3(result, packed);
+    pack_S3(
+        &result,
+        packed); // Might be inaccurate, but this was how the test was made...
 
     char *hex_output = malloc(PACKED_S3_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_S3_BYTES, hex_output);
@@ -173,12 +194,15 @@ int test_2_poly_inv_s2() {
     uint8_t *bytes1 = malloc(PACKED_S3_BYTES);
     hex_to_bytes(hex2, PACKED_S3_BYTES, bytes1);
 
-    poly *p1 =
-        S2(unpack_S3(bytes1)); // not sure if this is actually invertable in S2
-    poly *result = S2(S2_inverse(p1));
+    poly p1 = {0}, result = {0};
+    unpack_S3(bytes1, &p1);
+
+    S2(&p1);
+    S2_inverse(&p1, &result);
+    S2(&result);
 
     uint8_t *packed = malloc(PACKED_S3_BYTES);
-    pack_S3(result, packed);
+    pack_S3(&result, packed);
 
     char *hex_output = malloc(PACKED_S3_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_S3_BYTES, hex_output);
@@ -231,11 +255,15 @@ int test_poly_inv_sq() {
         malloc(PACKED_S3_BYTES); // original hex values come from S3
     hex_to_bytes(hex1, PACKED_S3_BYTES, bytes1);
 
-    poly *p1 = Sq(unpack_S3(bytes1));
-    poly *result = Sq(Sq_inverse(p1));
+    poly p1 = {0}, result = {0};
+    unpack_S3(bytes1, &p1);
+
+    Sq(&p1);
+    Sq_inverse(&p1, &result);
+    Sq(&result);
 
     uint8_t *packed = malloc(PACKED_SQ_BYTES);
-    pack_Sq(result, packed);
+    pack_Sq(&result, packed);
 
     char *hex_output = malloc(PACKED_SQ_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_SQ_BYTES, hex_output);
@@ -288,11 +316,15 @@ int test_2_poly_inv_sq() {
         malloc(PACKED_S3_BYTES); // original hex values come from S3
     hex_to_bytes(hex2, PACKED_S3_BYTES, bytes1);
 
-    poly *p1 = Sq(unpack_S3(bytes1));
-    poly *result = Sq(Sq_inverse(p1));
+    poly p1 = {0}, result = {0};
+    unpack_S3(bytes1, &p1);
+
+    Sq(&p1);
+    Sq_inverse(&p1, &result);
+    Sq(&result);
 
     uint8_t *packed = malloc(PACKED_SQ_BYTES);
-    pack_Sq(result, packed);
+    pack_Sq(&result, packed);
 
     char *hex_output = malloc(PACKED_SQ_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_SQ_BYTES, hex_output);
@@ -345,11 +377,14 @@ int test_lift() {
         malloc(PACKED_S3_BYTES); // original hex values come from S3
     hex_to_bytes(hex1, PACKED_S3_BYTES, bytes1);
 
-    poly *p1 = Sq(unpack_S3(bytes1));
-    poly *result = Sq(Lift(p1));
+    poly p1 = {0}, result = {0};
+    unpack_S3(bytes1, &p1);
+    Sq(&p1);
+    Lift(&p1, &result);
+    Sq(&result);
 
     uint8_t *packed = malloc(PACKED_SQ_BYTES);
-    pack_Sq(result, packed);
+    pack_Sq(&result, packed);
 
     char *hex_output = malloc(PACKED_SQ_BYTES * 2 + 1);
     bytes_to_hex(packed, PACKED_SQ_BYTES, hex_output);
