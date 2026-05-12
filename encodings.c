@@ -12,7 +12,6 @@
 // the order follows [b1 b2 b3 b4 b5 b6 b7 b8 b9] into
 // [[b8 b7 b6 b5 b4 b3 b2 b1] [0 0 0 0 0 0 0 b9]]
 void bits_to_bytes(bitstring_t bits, uint8_t *bytes) {
-
     int byte_count = (bits).length / 8;
     if ((bits).length % 8 != 0)
         byte_count++;
@@ -63,6 +62,7 @@ void pack_Rq0(poly *a, uint8_t *result) {
         }
     }
     bits_to_bytes(b, result);
+    free(b.data);
 }
 
 // takes in some list of bytes and converts these bytes into integer
@@ -72,7 +72,7 @@ void unpack_Rq0(uint8_t *bytes, poly *out) {
     int total_coeffs = 0;
 
     // TODO: This is very inefficient. Find a better way to get 8 bits at a time
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N - 1; i++) {
         int c = 0;
         int temp = 0;
         for (int j = 0; j < logQ; j++) {
@@ -85,6 +85,7 @@ void unpack_Rq0(uint8_t *bytes, poly *out) {
     }
     out->coeffs[N - 1] = (Q - total_coeffs) % Q;
     Rq(out);
+    free(bits.data);
 }
 
 // takes in some polynomial a, evalutes a in the ring Sq, extracts its
@@ -106,6 +107,7 @@ void pack_Sq(poly *a, uint8_t *result) {
     }
 
     bits_to_bytes(b, result);
+    free(b.data);
 }
 
 // takes in some list of bytes, forms a list of bits, breaks up the list of bits
@@ -115,7 +117,7 @@ void unpack_Sq(uint8_t *bytes, poly *out) {
     bitstring_t bits = bytes_to_bits(bytes, ((N - 1) * logQ));
 
     // TODO: This is very inefficient. Find a better way to get 8 bits at a time
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N - 1; i++) {
         int c = 0;
         for (int j = 0; j < logQ; j++) {
             c = c | (((int)(get_nth_bit(bits, i * logQ + j))) << j);
@@ -123,6 +125,7 @@ void unpack_Sq(uint8_t *bytes, poly *out) {
         out->coeffs[i] = c;
     }
     Sq(out);
+    free(bits.data);
 }
 
 // takes in some polynomial a, evalutes a in the ring S3, extracts its post

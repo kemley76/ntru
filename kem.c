@@ -23,13 +23,10 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
         printf("%02X \n", prf_key.data[i]);
     }*/
 
-    DPKE_key_pair_t key_pair = DPKE_Key_Pair(fg_bits);
-
     uint8_t *packed_private_key = malloc(KEM_PRIVATE_KEY_BYTES);
+    uint8_t *packed_public_key = malloc(KEM_PUBLIC_KEY_BYTES);
+    DPKE_Key_Pair(fg_bits, packed_private_key, packed_public_key);
 
-    // combine the DPKE private key and the prf_key
-    memcpy(packed_private_key, key_pair.packed_private_key,
-           DPKE_PRIVATE_KEY_BYTES);
     memcpy(packed_private_key + DPKE_PRIVATE_KEY_BYTES, prf_key.data,
            PRF_KEY_BITS / 8);
 
@@ -37,7 +34,7 @@ KEM_Key_Pair_t Key_Pair(bitstring_t seed) {
     // bits_to_bytes(prf_key, packed_private_key + DPKE_PRIVATE_KEY_BYTES);
 
     return (KEM_Key_Pair_t){.private_key = packed_private_key,
-                            .public_key = key_pair.packed_public_key};
+                            .public_key = packed_public_key};
 }
 
 // Generates a shared secret key and a ciphertext. The ciphertext can be
@@ -62,7 +59,12 @@ KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins) {
         bitStringOut.data[i] = flip_byte(bitStringOut.data[i]);
     }
     uint8_t *shared_key = hash(bitStringOut);
-    uint8_t *packed_ciphertext = DPKE_Encrypt(packed_public_key, packed_rm);
+    free(bitStringOut.data);
+
+    uint8_t *packed_ciphertext = malloc(PACKED_RQ0_BYTES);
+    DPKE_Encrypt(packed_public_key, packed_rm, packed_ciphertext);
+
+    free(packed_rm);
 
     return (KEM_Encapsualtion_t){.shared_key = shared_key,
                                  .ciphertext = packed_ciphertext};
@@ -75,15 +77,18 @@ uint8_t *Decapsulate(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     uint8_t *packed_dpke_private_key = packed_private_key;
     uint8_t *prf_key = packed_private_key + DPKE_PRIVATE_KEY_BYTES;
 
-    uint8_t *packed_rm =
-        DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext);
+    uint8_t *packed_rm = malloc(PACKED_S3_BYTES * 2);
+    DPKE_Decrypt(packed_dpke_private_key, packed_ciphertext, packed_rm);
 
     bitstring_t real_bits = bytes_to_bits(packed_rm, 8 * DPKE_PLAINTEXT_BYTES);
+    free(packed_rm);
+
     for (int i = 0; i < real_bits.length / 8; i++) {
         real_bits.data[i] = flip_byte(real_bits.data[i]);
     }
 
     uint8_t *shared_key = hash(real_bits);
+    free(real_bits.data);
 
     bitstring_t prf = bytes_to_bits(prf_key, PRF_KEY_BITS);
     bitstring_t cipher =
@@ -95,10 +100,16 @@ uint8_t *Decapsulate(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     }
     uint8_t *random_key = hash(fake_bits);
 
+    free(prf.data);
+    free(cipher.data);
+    free(fake_bits.data);
+
     int fail = 0; // TODO TODO TODO handle get failure info from DPKE_Decrypt
     if (fail) {
+        free(shared_key);
         return random_key;
     }
 
+    free(random_key);
     return shared_key;
 }

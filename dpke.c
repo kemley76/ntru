@@ -10,7 +10,8 @@
 // input: coins (bit string of length sample_key_bits)
 // output: packed_private_key (byte array of length dpke_private_key_bytes)
 //           packed_public_key (byte array of length dpke_public_key_bytes)
-DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
+void DPKE_Key_Pair(bitstring_t coins, uint8_t *packed_private_key,
+                   uint8_t *packed_public_key) {
     assert(coins.length == SAMPLE_KEY_BITS);
     poly f = {0}, g = {0}, f_p = {0}, h = {0}, h_q = {0};
     Sample_fg(coins, &f, &g);
@@ -18,17 +19,10 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
 
     // Note that this modifies g to scale by 3
     DPKE_Public_Key(&f, &g, &h, &h_q);
-
-    uint8_t *packed_private_key = malloc(PACKED_S3_BYTES * 2 + PACKED_SQ_BYTES);
     pack_S3(&f, packed_private_key);
     pack_S3(&f_p, packed_private_key + PACKED_S3_BYTES);
     pack_Sq(&h_q, packed_private_key + PACKED_S3_BYTES * 2);
-
-    uint8_t *packed_public_key = malloc(PACKED_RQ0_BYTES);
     pack_Rq0(&h, packed_public_key);
-
-    return (DPKE_key_pair_t){.packed_public_key = packed_public_key,
-                             .packed_private_key = packed_private_key};
 }
 
 // input: f (polynomial in lattice{f})
@@ -37,24 +31,24 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins) {
 //           h_q (polynomial that satisfies Sq(h · hq) = 1)
 void DPKE_Public_Key(poly *f, poly *g, poly *h, poly *h_q) {
     // G = g * 3
-    poly *G = calloc(1, sizeof(poly));
+    poly G = {0};
 
     for (int i = 0; i < N; i++) {
-        G->coeffs[i] = g->coeffs[i] * 3;
+        G.coeffs[i] = g->coeffs[i] * 3;
     }
 
     poly v_0 = {0};
-    poly_mul_S(G, f, &v_0);
+    poly_mul_S(&G, f, &v_0);
     Sq(&v_0);
 
     // print_poly("h", v_0);
     poly v_1 = {0}, temp = {0};
     Sq_inverse(&v_0, &v_1);
 
-    poly_mul_Rq(&v_1, G, &temp);
+    poly_mul_Rq(&v_1, &G, &temp);
     Rq(&temp);
 
-    poly_mul_Rq(&temp, G, h);
+    poly_mul_Rq(&temp, &G, h);
     Rq(h);
 
     poly_mul_Rq(&v_1, f, &temp);
@@ -62,14 +56,13 @@ void DPKE_Public_Key(poly *f, poly *g, poly *h, poly *h_q) {
 
     poly_mul_Rq(&temp, f, h_q);
     Rq(h_q);
-
-    // return (poly_pair){.first = h, .second = h_q};
 }
 
 // input: packed_public_key (byte array of length dpke_public_key_bytes)
 //           packed_rm (byte array of length dpke_plaintext_bytes)
 // output: packed_ciphertext (byte array of length dpke_ciphertext_bytes)
-uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
+void DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm,
+                  uint8_t *packed_ciphertext) {
     uint8_t *packed_r = packed_rm;
     uint8_t *packed_m = packed_rm + PACKED_S3_BYTES;
 
@@ -89,17 +82,15 @@ uint8_t *DPKE_Encrypt(uint8_t *packed_public_key, uint8_t *packed_rm) {
     }
     Rq(&cipher);
 
-    uint8_t *packed_ciphertext = malloc(PACKED_RQ0_BYTES);
     pack_Rq0(&cipher, packed_ciphertext);
-
-    return packed_ciphertext;
 }
 
 // input: packed_private_key (byte array of length dpke_private_key_bytes)
 //           packed_ciphertext (byte array of length dpke_ciphertext_bytes)
 // output: packed_rm (byte array of length dpke_plaintext_bytes)
 //           fail (bit)
-uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
+void DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext,
+                  uint8_t *packed_rm) {
     uint8_t *packed_f = packed_private_key;
     uint8_t *packed_fp = packed_private_key + PACKED_S3_BYTES;
     uint8_t *packed_hq = packed_private_key + PACKED_S3_BYTES * 2;
@@ -129,12 +120,9 @@ uint8_t *DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext) {
     poly_mul_S(&cipher, &h_q, &r);
     Sq_bar(&r);
 
-    uint8_t *packed_rm = malloc(PACKED_S3_BYTES * 2);
     pack_S3(&r, packed_rm);
     pack_S3(&m_0, packed_rm + PACKED_S3_BYTES);
 
     // TODO TODO TODO
     // Check if there is a decryption failure. Is possible but very very rare
-
-    return packed_rm;
 }

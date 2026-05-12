@@ -60,7 +60,9 @@ int test_hash() {
     bitstring_t bits = (bitstring_t){.length = 20 * 8, .data = data};
 
     char *output = malloc(65); // hash in hex is 64 + null byte
-    bytes_to_hex(hash(bits), 32, output);
+    uint8_t *h = hash(bits);
+    bytes_to_hex(h, 32, output);
+    free(h);
 
     int comparison = strncmp(output, expected, 40);
     free(output);

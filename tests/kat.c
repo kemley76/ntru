@@ -22,7 +22,7 @@ int test_all_kat() {
     int passed = 0;
 
     for (int i = 0; i < 100; i++) {
-        char seed[150] = {0};
+        char seed[SAMPLE_KEY_BITS / 4] = {0}; // Not exact sizes
         char pk[2300] = {0};
         char sk[3000] = {0};
         char ct[2300] = {0};
@@ -75,6 +75,7 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     total_keygen_time += (end.tv_sec - start.tv_sec) * 1000000000 +
                          (end.tv_nsec - start.tv_nsec);
+    free(bits.data);
 
     bitstring_t coins = new_bitstring(SAMPLE_PLAINTEXT_BITS);
     result = randombytes(coins.data, SAMPLE_PLAINTEXT_BITS / 8);
@@ -85,6 +86,7 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     total_enc_time += (end.tv_sec - start.tv_sec) * 1000000000 +
                       (end.tv_nsec - start.tv_nsec);
+    free(coins.data);
 
     clock_gettime(CLOCK_MONOTONIC, &start);
     uint8_t *shared_key = Decapsulate(keypair.private_key, capsule.ciphertext);
@@ -108,35 +110,41 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
     free(capsule.shared_key);
     free(shared_key);
 
+    int ret = 1;
     if (strncmp(pk, actual_pk, KEM_PUBLIC_KEY_BYTES * 2)) {
         printf("test_kat: public key does not match expected\n");
         printf("public key wrong: \n%s\n%s\n", pk, actual_pk);
-        return 0;
+        ret = 0;
     }
 
     if (strncmp(sk, actual_sk, KEM_PRIVATE_KEY_BYTES * 2)) {
         printf("test_kat: private key does not match expected\n");
         printf("private key wrong: \n%s\n\n%s\n", sk, actual_sk);
-        return 0;
+        ret = 0;
     }
 
     if (strncmp(ct, actual_ct, KEM_CIPHERTEXT_BYTES * 2)) {
         printf("test_kat: ciphertext does not match expected\n");
         printf("ciphertext: \n%s\n\n%s\n", ct, actual_ct);
-        return 0;
+        ret = 0;
     }
 
     if (strncmp(ss, actual_ss1, KEM_SHARED_KEY_BITS / 8 * 2)) {
         printf("test_kat: shared secret (1) does not match expected\n");
         printf("shared secret: \n%s\n\n%s\n", ss, actual_ss1);
-        return 0;
+        ret = 0;
     }
 
     if (strncmp(ss, actual_ss2, KEM_SHARED_KEY_BITS / 8 * 2)) {
         printf("test_kat: shared secret (2) does not match expected\n");
         printf("shared secret: \n%s\n\n%s\n", ss, actual_ss2);
-        return 0;
+        ret = 0;
     }
 
-    return 1;
+    free(actual_pk);
+    free(actual_sk);
+    free(actual_ct);
+    free(actual_ss1);
+    free(actual_ss2);
+    return ret;
 }

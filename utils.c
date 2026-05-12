@@ -13,7 +13,10 @@ void bytes_to_hex(uint8_t *bytes, int n_bytes, char *hex) {
 
 void hex_to_bytes(char *hex, int n_bytes, uint8_t *bytes) {
     for (int i = 0; i < n_bytes; i++) {
-        sscanf(hex + 2 * i, "%2hhx", &bytes[i]);
+        if (hex[2 * i] == 0)
+            bytes[i] = 0;
+        else
+            sscanf(hex + 2 * i, "%2hhx", &bytes[i]);
     }
 }
 
