@@ -143,65 +143,41 @@ void schoolbook(short *x, short *y, int size, short *out) {
             out[i + j] += x[i] * y[j];
         }
     }
-    /*printf("----- SCHOOLBOOK size %d\n", size * 2);
-    ppoly(x, size);
-    printf("TIMES\n");
-    ppoly(y, size);
-    printf("IS\n");
-    ppoly(out, size * 2);*/
 }
 
 void karatsuba(short *x, short *y, int size, short *out) {
-    if (size <= 20) {
+    if (size % 2) { // unable to divide polynomials into two even parts
+                    // use schoolbook instead
         schoolbook(x, y, size, out);
         return;
     }
 
-    int next_round = size / 2;
-    if (size % 2) {
-        next_round++;
-        printf("UH OH");
-    }
-
     // each is a buffer of size: next_round
-    short *x1 = x + next_round;
+    short *x1 = x + size / 2;
     short *x2 = x;
-    short *y1 = y + next_round;
+    short *y1 = y + size / 2;
     short *y2 = y;
 
-    printf("recursing... %d\n", size);
+    short u[size];
+    short v[size];
+    short w[size];
+    karatsuba(x1, y1, size / 2, u);
+    karatsuba(x2, y2, size / 2, v);
 
-    short u[next_round * 2];
-    short v[next_round * 2];
-    short w[next_round * 2];
-    karatsuba(x1, y1, next_round, u);
-    karatsuba(x2, y2, next_round, v);
-
-    short w1[next_round];
-    short w2[next_round];
-    for (int i = 0; i < next_round; i++) {
+    short w1[size / 2];
+    short w2[size / 2];
+    for (int i = 0; i < size / 2; i++) {
         w1[i] = x1[i] - x2[i];
         w2[i] = y1[i] - y2[i];
     }
-    karatsuba(w1, w2, next_round, w);
+    karatsuba(w1, w2, size / 2, w);
 
     memset(out, 0, size * sizeof(short) * 2);
-    for (int i = 0; i < next_round * 2; i++) {
-        // printf("%d - u %d v %d w %d z %d\n", i, u[i], v[i], w[i],
-        // u[i] + v[i] - w[i]);
-        out[i + next_round * 2] += u[i];
-        out[i + next_round] += u[i] + v[i] - w[i];
+    for (int i = 0; i < size; i++) {
+        out[i + size] += u[i];
+        out[i + size / 2] += u[i] + v[i] - w[i];
         out[i] += v[i];
     }
-
-    /*if (next_round * 2 == 352) {
-        printf("----- size %d\n", next_round * 2);
-        ppoly(x, size);
-        printf("TIMES\n");
-        ppoly(y, size);
-        printf("IS\n");
-        ppoly(out, size * 2);
-    }*/
 }
 
 // Compute polynomial multiplication and modular in S/q
@@ -211,28 +187,16 @@ void karatsuba(short *x, short *y, int size, short *out) {
 // input: a and b (two polynomials in ring Z[x])
 // output: c (polynomial in Z[x]/(q,Φ_n))
 void poly_mul_S(poly *a, poly *b, poly *out) {
-    // poly *c = calloc(1, N); // 702
-    //
-    //
-    /*short x[704];
-    short y[704];
-    short out1[(704) * 2] = {0};
-    karatsuba(x, y, 704, out1);
-    for (int i = 0; i < 704 * 2; i++) {
-        out1[i % (N - 1)] += out1[i];
-        // printf("out  %d\n", out1[i]);
-    }
-    int last = out1[N - 1];
-    for (int i = 0; i < N; i++) {
-        out1[i] = out1[i] - last;
-    }
-    ppoly(out1, N * 2);
-    printf("last %d\n", last);
-
-    return;*/
-
     short temp[704 * 2];
-    // memset(out->coeffs, 0, sizeof(short) * N);
+
+    // Set extra space in polynomial to 0
+    // since its only here as padding
+    a->coeffs[701] = 0;
+    a->coeffs[702] = 0;
+    a->coeffs[703] = 0;
+    b->coeffs[701] = 0;
+    b->coeffs[702] = 0;
+    b->coeffs[703] = 0;
     karatsuba(a->coeffs, b->coeffs, 704, temp);
     for (int i = 0; i < N; i++) {
         out->coeffs[i] = temp[i] + temp[i + N];
@@ -241,34 +205,6 @@ void poly_mul_S(poly *a, poly *b, poly *out) {
     for (int i = 0; i < N; i++) {
         out->coeffs[i] = (out->coeffs[i] - last);
     }
-
-    // ppoly(out1, 32);
-    // printf("\n");
-
-    /*for (int i = 0; i < N; i++) {
-        if (a->coeffs[i] == 0) {
-            continue;
-        }
-        for (int j = 0; j < N; j++) {
-            int index = i + j;
-
-            if (index >= N) {
-                index -= N;
-            }
-
-            c->coeffs[index] += (a->coeffs[i] * b->coeffs[j]);
-        }
-    }
-
-    int last = c->coeffs[N - 1];
-    for (int i = 0; i < N; i++) {
-        c->coeffs[i] = (c->coeffs[i] - last);
-    }
-
-    // Note to calling function: make sure to call the
-    // other S functions or the coefficients will be wrong!
-    memcpy(out, c, sizeof(poly));
-    free(c);*/
 }
 
 // Helper function to determine the degree of a polynomial
