@@ -91,12 +91,13 @@ void unpack_Rq0(uint8_t *bytes, poly *out) {
 // coefficients, and converts its post sq coefficients to binary with a given
 // length per number.
 void pack_Sq(poly *a, uint8_t *result) {
-    poly *v = Sq_bar(a);
+
+    Sq_bar(a);
     bitstring_t b = new_bitstring(PACKED_SQ_BYTES * 8);
 
     // TODO: This is very inefficient. Find a better way to set 8 bits at a time
     for (int i = 0; i < N - 1; i++) {
-        int modRes = (v->coeffs[i] + 2 * Q) % Q;
+        int modRes = (a->coeffs[i] + 2 * Q) % Q;
 
         for (int j = 0; j < logQ; j++) {
             set_nth_bit(b, (i * logQ + j), (modRes & 0x1));

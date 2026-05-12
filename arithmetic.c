@@ -88,16 +88,14 @@ void Sq(poly *a) {
 // must be between (-q/2) and (q/2 - 1)
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in ring Z[x]/(q,Φ_n) that is canonical)
-poly *Sq_bar(poly *a) {
-    poly *b = calloc(1, sizeof(poly));
+void Sq_bar(poly *a) {
     int last = a->coeffs[N - 1] % Q;
     for (int i = 0; i < N; i++) {
-        b->coeffs[i] = ((a->coeffs[i] - last) % Q + Q) % Q;
-        if (b->coeffs[i] > (Q / 2)) {
-            b->coeffs[i] -= Q;
+        a->coeffs[i] = ((a->coeffs[i] - last) % Q + Q) % Q;
+        if (a->coeffs[i] > (Q / 2)) {
+            a->coeffs[i] -= Q;
         }
     }
-    return b;
 }
 
 // Compute polynomial multiplication and modular in R/q
@@ -105,7 +103,7 @@ poly *Sq_bar(poly *a) {
 // function to make sure the coefficients are correct
 // input: a and b (two polynomials in ring Z[x])
 // output: c (polynomial in Z[x]/(q,Φ_1*Φ_n))
-poly *poly_mul_Rq(poly *a, poly *b) {
+void poly_mul_Rq(poly *a, poly *b, poly *out) {
     poly *c = calloc(1, sizeof(poly));
 
     for (int i = 0; i < N; i++) {
@@ -123,7 +121,8 @@ poly *poly_mul_Rq(poly *a, poly *b) {
 
     // Note to calling function: make sure to call either
     // Rq or Rq_bar or the coefficients will be wrong!
-    return c;
+    memcpy(out, c, sizeof(poly));
+    free(c);
 }
 
 // Compute polynomial multiplication and modular in S/q

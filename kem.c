@@ -48,7 +48,7 @@ KEM_Encapsualtion_t Encapsulate(uint8_t *packed_public_key, bitstring_t coins) {
         // TODO: fill bits of coins randomly!
     }
 
-    poly r, m;
+    poly r = {0}, m = {0};
     Sample_rm(coins, &r, &m);
 
     uint8_t *packed_rm = malloc(PACKED_S3_BYTES * 2);

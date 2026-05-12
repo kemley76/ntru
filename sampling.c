@@ -59,7 +59,7 @@ void Ternary(bitstring_t b, poly *out) {
     // Original algorithm: This seems like a complicated way of just copying the
     // individual bits into the coefficients??
     int i = 0;
-    while (i < N - 1) {
+    while (i < N) {
         out->coeffs[i] =
             flip_byte(bytes[i]); // Is this really how it would work?
         i++;

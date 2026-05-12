@@ -22,7 +22,7 @@ DPKE_key_pair_t DPKE_Key_Pair(bitstring_t coins);
 //       g (polynomial in lattice{g})
 // output: h (polynomial that satisfies Rq(h · f) = 3 · g)
 //           h_q (polynomial that satisfies Sq(h · hq) = 1)
-poly_pair DPKE_Public_Key(poly *f, poly *g);
+void DPKE_Public_Key(poly *f, poly *g, poly *h, poly *h_q);
 
 // input: packed_public_key (byte array of length dpke_public_key_bytes)
 //           packed_rm (byte array of length dpke_plaintext_bytes)

@@ -48,12 +48,12 @@ void Sq(poly *a);
 
 // Finds the canonical representative of the given polynomial
 // in the S/q quotient ring
-poly *Sq_bar(poly *a);
+void Sq_bar(poly *a);
 
 // Compute polynomial multiplication and modular in R/q
 // Ensure that Rq OR Rq_bar is called outside of this
 // function to make sure the coefficients are correct
-poly *poly_mul_Rq(poly *a, poly *b);
+void poly_mul_Rq(poly *a, poly *b, poly *out);
 
 // Compute polynomial multiplication and modular in S/q
 // Ensure that Sq, Sq_bar, S2, S3, OR S3_bar is called
