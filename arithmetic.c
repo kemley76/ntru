@@ -125,6 +125,85 @@ void poly_mul_Rq(poly *a, poly *b, poly *out) {
     free(c);
 }
 
+void ppoly(short *x, int size) {
+    for (int i = 0; i < size; i++) {
+        if (!x[i])
+            continue;
+        printf("%d * x^%d + ", x[i], i);
+    }
+    printf("\n");
+}
+
+void schoolbook(short *x, short *y, int size, short *out) {
+    memset(out, 0, sizeof(short) * size * 2);
+    for (int i = 0; i < size; i++) {
+        if (x[i] == 0)
+            continue;
+        for (int j = 0; j < size; j++) {
+            out[i + j] += x[i] * y[j];
+        }
+    }
+    /*printf("----- SCHOOLBOOK size %d\n", size * 2);
+    ppoly(x, size);
+    printf("TIMES\n");
+    ppoly(y, size);
+    printf("IS\n");
+    ppoly(out, size * 2);*/
+}
+
+void karatsuba(short *x, short *y, int size, short *out) {
+    if (size <= 20) {
+        schoolbook(x, y, size, out);
+        return;
+    }
+
+    int next_round = size / 2;
+    if (size % 2) {
+        next_round++;
+        printf("UH OH");
+    }
+
+    // each is a buffer of size: next_round
+    short *x1 = x + next_round;
+    short *x2 = x;
+    short *y1 = y + next_round;
+    short *y2 = y;
+
+    printf("recursing... %d\n", size);
+
+    short u[next_round * 2];
+    short v[next_round * 2];
+    short w[next_round * 2];
+    karatsuba(x1, y1, next_round, u);
+    karatsuba(x2, y2, next_round, v);
+
+    short w1[next_round];
+    short w2[next_round];
+    for (int i = 0; i < next_round; i++) {
+        w1[i] = x1[i] - x2[i];
+        w2[i] = y1[i] - y2[i];
+    }
+    karatsuba(w1, w2, next_round, w);
+
+    memset(out, 0, size * sizeof(short) * 2);
+    for (int i = 0; i < next_round * 2; i++) {
+        // printf("%d - u %d v %d w %d z %d\n", i, u[i], v[i], w[i],
+        // u[i] + v[i] - w[i]);
+        out[i + next_round * 2] += u[i];
+        out[i + next_round] += u[i] + v[i] - w[i];
+        out[i] += v[i];
+    }
+
+    /*if (next_round * 2 == 352) {
+        printf("----- size %d\n", next_round * 2);
+        ppoly(x, size);
+        printf("TIMES\n");
+        ppoly(y, size);
+        printf("IS\n");
+        ppoly(out, size * 2);
+    }*/
+}
+
 // Compute polynomial multiplication and modular in S/q
 // Ensure that Sq, Sq_bar, S2, S3, OR S3_bar is called
 // outside of this function to make sure the coefficients
@@ -132,9 +211,41 @@ void poly_mul_Rq(poly *a, poly *b, poly *out) {
 // input: a and b (two polynomials in ring Z[x])
 // output: c (polynomial in Z[x]/(q,Φ_n))
 void poly_mul_S(poly *a, poly *b, poly *out) {
-    poly *c = calloc(1, sizeof(poly));
-
+    // poly *c = calloc(1, N); // 702
+    //
+    //
+    /*short x[704];
+    short y[704];
+    short out1[(704) * 2] = {0};
+    karatsuba(x, y, 704, out1);
+    for (int i = 0; i < 704 * 2; i++) {
+        out1[i % (N - 1)] += out1[i];
+        // printf("out  %d\n", out1[i]);
+    }
+    int last = out1[N - 1];
     for (int i = 0; i < N; i++) {
+        out1[i] = out1[i] - last;
+    }
+    ppoly(out1, N * 2);
+    printf("last %d\n", last);
+
+    return;*/
+
+    short temp[704 * 2];
+    // memset(out->coeffs, 0, sizeof(short) * N);
+    karatsuba(a->coeffs, b->coeffs, 704, temp);
+    for (int i = 0; i < N; i++) {
+        out->coeffs[i] = temp[i] + temp[i + N];
+    }
+    int last = out->coeffs[N - 1];
+    for (int i = 0; i < N; i++) {
+        out->coeffs[i] = (out->coeffs[i] - last);
+    }
+
+    // ppoly(out1, 32);
+    // printf("\n");
+
+    /*for (int i = 0; i < N; i++) {
         if (a->coeffs[i] == 0) {
             continue;
         }
@@ -157,7 +268,7 @@ void poly_mul_S(poly *a, poly *b, poly *out) {
     // Note to calling function: make sure to call the
     // other S functions or the coefficients will be wrong!
     memcpy(out, c, sizeof(poly));
-    free(c);
+    free(c);*/
 }
 
 // Helper function to determine the degree of a polynomial
@@ -206,7 +317,8 @@ void S3_inverse(poly *a, poly *out) {
     memcpy(&b, &other_a, sizeof(poly));
 
     for (int i = 1; i < N - 2; i++) {
-        // c = b ^ 3
+        // printf("%d/%d\n", i, N - 2);
+        //  c = b ^ 3
         poly_mul_S(&b, &b, &c);
         poly_mul_S(&c, &b, &c);
         S3(&c);

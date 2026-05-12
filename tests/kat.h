@@ -10,6 +10,7 @@
 int test_all_kat();
 
 // put comment here (a specific hex_seed)
-int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss);
+int test_kat(uint8_t *seed, const char *pk, const char *sk, const char *ct,
+             const char *ss);
 
 #endif

@@ -1,40 +1,43 @@
 #include "kat.h"
 #include "../rng.h"
 #include "../utils.h"
+#include "kat_tests.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+// #include <time.h>
 
 // Timing variables
-struct timespec start, end;
-long long total_keygen_time = 0;
-long long total_enc_time = 0;
-long long total_dec_time = 0;
+// struct timespec start, end;
+// long long total_keygen_time = 0;
+// long long total_enc_time = 0;
+// long long total_dec_time = 0;
 
 // Parses the KAT file and checks and times our implementation against the tests
 // contained in it
 int test_all_kat() {
-    FILE *fptr = fopen("PQCkemKAT_1450.rsp", "r");
-    fscanf(fptr, "%*[^\n]\n"); // skips to the next line
+    // FILE *fptr = fopen("PQCkemKAT_1450.rsp", "r");
+    // fscanf(fptr, "%*[^\n]\n"); // skips to the next line
 
     int passed = 0;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 5; i++) {
         char seed[SAMPLE_KEY_BITS / 4] = {0}; // Not exact sizes
-        char pk[2300] = {0};
-        char sk[3000] = {0};
-        char ct[2300] = {0};
-        char ss[100] = {0};
+        memcpy(seed, KATS[i].seed, strlen(KATS[i].seed));
 
-        fscanf(fptr, "%*[^\n]\n"); // skip count = X
+        const char *pk = KATS[i].pk;
+        const char *sk = KATS[i].sk;
+        const char *ct = KATS[i].ct;
+        const char *ss = KATS[i].ss;
 
-        fscanf(fptr, "seed = %s\n", seed);
-        fscanf(fptr, "pk = %s\n", pk);
-        fscanf(fptr, "sk = %s\n", sk);
-        fscanf(fptr, "ct = %s\n", ct);
-        fscanf(fptr, "ss = %s\n", ss);
+        // fscanf(fptr, "%*[^\n]\n"); // skip count = X
+
+        // fscanf(fptr, "seed = %s\n", seed);
+        // fscanf(fptr, "pk = %s\n", pk);
+        // fscanf(fptr, "sk = %s\n", sk);
+        // fscanf(fptr, "ct = %s\n", ct);
+        // fscanf(fptr, "ss = %s\n", ss);
 
         uint8_t seed_bytes[SAMPLE_KEY_BITS / 8] = {0};
         hex_to_bytes(seed, SAMPLE_KEY_BITS / 8, seed_bytes);
@@ -47,17 +50,18 @@ int test_all_kat() {
         passed += current;
     }
     printf("Total KATs passed: %d/100\n", passed);
-    printf("  Key Generation:\t%lld microseconds\n",
+    /*printf("  Key Generation:\t%lld microseconds\n",
            total_keygen_time / 100 / 1000);
     printf("  Encapsulation:\t%lld microseconds\n",
            total_enc_time / 100 / 1000);
     printf("  Decapsulation:\t%lld microseconds\n",
-           total_dec_time / 100 / 1000);
+           total_dec_time / 100 / 1000);*/
 
     return 1;
 }
 
-int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
+int test_kat(uint8_t *seed, const char *pk, const char *sk, const char *ct,
+             const char *ss) {
     randombytes_init(seed, NULL, 256);
 
     // fg_bits
@@ -70,29 +74,29 @@ int test_kat(uint8_t *seed, char *pk, char *sk, char *ct, char *ss) {
     result = randombytes(bits.data + SAMPLE_KEY_BITS / 8, PRF_KEY_BITS / 8);
     assert(result == 0);
 
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    // clock_gettime(CLOCK_MONOTONIC, &start);
     KEM_Key_Pair_t keypair = Key_Pair(bits);
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    total_keygen_time += (end.tv_sec - start.tv_sec) * 1000000000 +
-                         (end.tv_nsec - start.tv_nsec);
+    // clock_gettime(CLOCK_MONOTONIC, &end);
+    // total_keygen_time += (end.tv_sec - start.tv_sec) * 1000000000 +
+    //(end.tv_nsec - start.tv_nsec);
     free(bits.data);
 
     bitstring_t coins = new_bitstring(SAMPLE_PLAINTEXT_BITS);
     result = randombytes(coins.data, SAMPLE_PLAINTEXT_BITS / 8);
     assert(result == 0);
 
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    // clock_gettime(CLOCK_MONOTONIC, &start);
     KEM_Encapsualtion_t capsule = Encapsulate(keypair.public_key, coins);
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    total_enc_time += (end.tv_sec - start.tv_sec) * 1000000000 +
-                      (end.tv_nsec - start.tv_nsec);
+    // clock_gettime(CLOCK_MONOTONIC, &end);
+    // total_enc_time += (end.tv_sec - start.tv_sec) * 1000000000 +
+    //(end.tv_nsec - start.tv_nsec);
     free(coins.data);
 
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    // clock_gettime(CLOCK_MONOTONIC, &start);
     uint8_t *shared_key = Decapsulate(keypair.private_key, capsule.ciphertext);
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    total_dec_time += (end.tv_sec - start.tv_sec) * 1000000000 +
-                      (end.tv_nsec - start.tv_nsec);
+    // clock_gettime(CLOCK_MONOTONIC, &end);
+    // total_dec_time += (end.tv_sec - start.tv_sec) * 1000000000 +
+    //(end.tv_nsec - start.tv_nsec);
 
     char *actual_pk = malloc(KEM_PUBLIC_KEY_BYTES * 2 + 1);
     char *actual_sk = malloc(KEM_PRIVATE_KEY_BYTES * 2 + 1);

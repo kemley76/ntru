@@ -8,7 +8,7 @@
 // Polynomial type
 // The polynomials should never go above N - 1 degrees
 typedef struct {
-    int coeffs[N];
+    short coeffs[704]; // 704 because its greater than N = 701 and equals 22*2^5
 } poly;
 
 typedef struct {
