@@ -76,6 +76,8 @@ int test_kat(uint8_t *seed, const char *pk, const char *sk, const char *ct,
 
     // clock_gettime(CLOCK_MONOTONIC, &start);
     KEM_Key_Pair_t keypair = Key_Pair(bits);
+    printf("Keypair done\n");
+    exit(0);
     // clock_gettime(CLOCK_MONOTONIC, &end);
     // total_keygen_time += (end.tv_sec - start.tv_sec) * 1000000000 +
     //(end.tv_nsec - start.tv_nsec);

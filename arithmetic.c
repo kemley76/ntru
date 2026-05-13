@@ -273,11 +273,8 @@ void bitsliced_sub(uint64_t x0, uint64_t x1, uint64_t y0, uint64_t y1,
 // output: b (polynomial in Z[x]/(3,Φ_n))
 void S3_inverse(poly *a, poly *out) {
     assert(a->coeffs[N - 1] == 0);
-    poly original = {.coeffs = {
-                         1,
-                         1,
-                     }};
-    // memcpy(&original, a, sizeof(poly));
+    poly original;
+    memcpy(&original, a, sizeof(poly));
     S3_bar(&original);
 
     int delta = 1;
@@ -304,6 +301,8 @@ void S3_inverse(poly *a, poly *out) {
                           //
 
     for (int i = 0; i < 2 * 700 - 1; i++) {
+        if (i % 20 == 0)
+            printf("%d/1399\n", i);
         // Replace v with xv.
         uint64_t top_carry = 0;
         uint64_t bottom_carry = 0;
@@ -407,7 +406,7 @@ void S3_inverse(poly *a, poly *out) {
     out->coeffs[N - 1] = 0;
 
     S3(out);
-    S3(&original);
+    /*S3(&original);
     print_poly("original", &original);
     print_poly("poly inverse: ", out);
     printf("final result %d\n", delta);
@@ -415,7 +414,8 @@ void S3_inverse(poly *a, poly *out) {
     poly test = {0};
     poly_mul_S(out, &original, &test);
     S3(&test);
-    print_poly("product %d\n", &test);
+    print_poly("product %d\n", &test);*/
+
     // assert(delta == 1);
     return;
 }
