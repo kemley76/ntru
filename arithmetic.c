@@ -229,6 +229,7 @@ void S2_inverse(poly *a, poly *out) {
     memcpy(&b, a, sizeof(poly));
 
     for (int i = 1; i < N - 2; i++) {
+        printf("%d/700\n", i);
         poly_mul_S(&b, &b, &c);
         S2(&c);
         poly_mul_S(&c, a, &b);
@@ -301,8 +302,8 @@ void S3_inverse(poly *a, poly *out) {
                           //
 
     for (int i = 0; i < 2 * 700 - 1; i++) {
-        if (i % 20 == 0)
-            printf("%d/1399\n", i);
+        // if (i % 20 == 0)
+        // printf("%d/1399\n", i);
         // Replace v with xv.
         uint64_t top_carry = 0;
         uint64_t bottom_carry = 0;
@@ -427,7 +428,9 @@ void Sq_inverse(poly *a, poly *out) {
     poly v0 = {0};
     poly other_a; // other_a is needed since S2_inverse modifies a;
     memcpy(&other_a, a, sizeof(poly));
+    printf("S2 inverse\n");
     S2_inverse(&other_a, &v0);
+    printf("DONE DONE DONE S2 inverse\n");
     /*if (v0 == NULL) {
         return;
     }*/

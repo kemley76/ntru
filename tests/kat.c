@@ -6,17 +6,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <time.h>
 
-// Timing variables
-// struct timespec start, end;
-// long long total_keygen_time = 0;
-// long long total_enc_time = 0;
-// long long total_dec_time = 0;
+// Standard ARM addresses for the DWT Cycle Counter
+volatile uint32_t *DWT_CONTROL = (uint32_t *)0xE0001000;
+volatile uint32_t *DWT_CYCCNT = (uint32_t *)0xE0001004;
+volatile uint32_t *DEMCR = (uint32_t *)0xE000EDFC;
+uint32_t start = 0;
+
+void start_measure() {
+    // Enable the trace unit and the cycle counter
+    /*printf("starting measure!!\n");
+    *DEMCR |= 0x01000000;
+    *DWT_CONTROL |= 1;
+
+    start = *DWT_CYCCNT;*/
+}
+
+void end_measure() {
+    /*uint32_t end = *DWT_CYCCNT;
+    uint32_t cycles = end - start;
+
+    printf("Total clock cycles: %d\n", cycles);*/
+}
 
 // Parses the KAT file and checks and times our implementation against the tests
 // contained in it
 int test_all_kat() {
+
     // FILE *fptr = fopen("PQCkemKAT_1450.rsp", "r");
     // fscanf(fptr, "%*[^\n]\n"); // skips to the next line
 
@@ -50,12 +66,6 @@ int test_all_kat() {
         passed += current;
     }
     printf("Total KATs passed: %d/100\n", passed);
-    /*printf("  Key Generation:\t%lld microseconds\n",
-           total_keygen_time / 100 / 1000);
-    printf("  Encapsulation:\t%lld microseconds\n",
-           total_enc_time / 100 / 1000);
-    printf("  Decapsulation:\t%lld microseconds\n",
-           total_dec_time / 100 / 1000);*/
 
     return 1;
 }
@@ -74,31 +84,25 @@ int test_kat(uint8_t *seed, const char *pk, const char *sk, const char *ct,
     result = randombytes(bits.data + SAMPLE_KEY_BITS / 8, PRF_KEY_BITS / 8);
     assert(result == 0);
 
-    // clock_gettime(CLOCK_MONOTONIC, &start);
+    start_measure();
     KEM_Key_Pair_t keypair = Key_Pair(bits);
+    end_measure();
     printf("Keypair done\n");
-    exit(0);
-    // clock_gettime(CLOCK_MONOTONIC, &end);
-    // total_keygen_time += (end.tv_sec - start.tv_sec) * 1000000000 +
-    //(end.tv_nsec - start.tv_nsec);
+
     free(bits.data);
 
     bitstring_t coins = new_bitstring(SAMPLE_PLAINTEXT_BITS);
     result = randombytes(coins.data, SAMPLE_PLAINTEXT_BITS / 8);
     assert(result == 0);
 
-    // clock_gettime(CLOCK_MONOTONIC, &start);
+    start_measure();
     KEM_Encapsualtion_t capsule = Encapsulate(keypair.public_key, coins);
-    // clock_gettime(CLOCK_MONOTONIC, &end);
-    // total_enc_time += (end.tv_sec - start.tv_sec) * 1000000000 +
-    //(end.tv_nsec - start.tv_nsec);
+    end_measure();
     free(coins.data);
 
-    // clock_gettime(CLOCK_MONOTONIC, &start);
+    start_measure();
     uint8_t *shared_key = Decapsulate(keypair.private_key, capsule.ciphertext);
-    // clock_gettime(CLOCK_MONOTONIC, &end);
-    // total_dec_time += (end.tv_sec - start.tv_sec) * 1000000000 +
-    //(end.tv_nsec - start.tv_nsec);
+    end_measure();
 
     char *actual_pk = malloc(KEM_PUBLIC_KEY_BYTES * 2 + 1);
     char *actual_sk = malloc(KEM_PRIVATE_KEY_BYTES * 2 + 1);

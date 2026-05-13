@@ -5,6 +5,7 @@
 #include "encodings.h"
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // input: coins (bit string of length sample_key_bits)
@@ -14,11 +15,15 @@ void DPKE_Key_Pair(bitstring_t coins, uint8_t *packed_private_key,
                    uint8_t *packed_public_key) {
     assert(coins.length == SAMPLE_KEY_BITS);
     poly f = {0}, g = {0}, f_p = {0}, h = {0}, h_q = {0};
+    printf("sample fg\n");
     Sample_fg(coins, &f, &g);
+    printf("inversing..\n");
     S3_inverse(&f, &f_p);
 
     // Note that this modifies g to scale by 3
+    printf("public key..\n");
     DPKE_Public_Key(&f, &g, &h, &h_q);
+
     pack_S3(&f, packed_private_key);
     pack_S3(&f_p, packed_private_key + PACKED_S3_BYTES);
     pack_Sq(&h_q, packed_private_key + PACKED_S3_BYTES * 2);
@@ -43,6 +48,7 @@ void DPKE_Public_Key(poly *f, poly *g, poly *h, poly *h_q) {
 
     // print_poly("h", v_0);
     poly v_1 = {0}, temp = {0};
+    printf("sq inverse\n");
     Sq_inverse(&v_0, &v_1);
 
     poly_mul_Rq(&v_1, &G, &temp);
