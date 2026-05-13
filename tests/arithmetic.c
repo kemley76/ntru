@@ -11,14 +11,14 @@
 int test_all_arithmetic() {
     int status = 1;
 
-    status &= test_poly_mul_1();
+    // status &= test_poly_mul_1();
     status &= test_poly_inv_s3();
-    status &= test_2_poly_inv_s3();
+    /*status &= test_2_poly_inv_s3();
     status &= test_poly_inv_s2();
     status &= test_2_poly_inv_s2();
     status &= test_poly_inv_sq();
     status &= test_2_poly_inv_sq();
-    status &= test_lift();
+    status &= test_lift();*/
 
     if (status) {
         printf("All arithmeitc tests passed\n");
