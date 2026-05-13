@@ -1,5 +1,6 @@
 #include "arithmetic.h"
 #include "./tests/arithmetic.h"
+#include "utils.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -187,24 +188,32 @@ void karatsuba(short *x, short *y, int size, short *out) {
 // input: a and b (two polynomials in ring Z[x])
 // output: c (polynomial in Z[x]/(q,Φ_n))
 void poly_mul_S(poly *a, poly *b, poly *out) {
-    short temp[704 * 2];
+    poly *c = calloc(1, sizeof(poly));
 
-    // Set extra space in polynomial to 0
-    // since its only here as padding
-    a->coeffs[701] = 0;
-    a->coeffs[702] = 0;
-    a->coeffs[703] = 0;
-    b->coeffs[701] = 0;
-    b->coeffs[702] = 0;
-    b->coeffs[703] = 0;
-    karatsuba(a->coeffs, b->coeffs, 704, temp);
     for (int i = 0; i < N; i++) {
-        out->coeffs[i] = temp[i] + temp[i + N];
+        if (a->coeffs[i] == 0) {
+            continue;
+        }
+        for (int j = 0; j < N; j++) {
+            int index = i + j;
+
+            if (index >= N) {
+                index -= N;
+            }
+
+            c->coeffs[index] += (a->coeffs[i] * b->coeffs[j]);
+        }
     }
-    int last = out->coeffs[N - 1];
+
+    int last = c->coeffs[N - 1];
     for (int i = 0; i < N; i++) {
-        out->coeffs[i] = (out->coeffs[i] - last);
+        c->coeffs[i] = (c->coeffs[i] - last);
     }
+
+    // Note to calling function: make sure to call the
+    // other S functions or the coefficients will be wrong!
+    memcpy(out, c, sizeof(poly));
+    free(c);
 }
 
 // Helper function to determine the degree of a polynomial
@@ -255,7 +264,9 @@ void S3_inverse(poly *a, poly *out) {
     for (int i = 1; i < N - 2; i++) {
         // printf("%d/%d\n", i, N - 2);
         //  c = b ^ 3
+        start_measure();
         poly_mul_S(&b, &b, &c);
+        end_measure();
         poly_mul_S(&c, &b, &c);
         S3(&c);
         poly_mul_S(&c, &other_a, &b);
