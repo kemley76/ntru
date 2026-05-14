@@ -32,3 +32,25 @@ uint8_t *hash(bitstring_t bits) {
 
     return out_hash;
 }
+
+// Standard ARM addresses for the DWT Cycle Counter
+volatile uint32_t *DWT_CONTROL = (uint32_t *)0xE0001000;
+volatile uint32_t *DWT_CYCCNT = (uint32_t *)0xE0001004;
+volatile uint32_t *DEMCR = (uint32_t *)0xE000EDFC;
+uint32_t start = 0;
+
+void start_measure() {
+    // Enable the trace unit and the cycle counter
+    /*printf("starting measure!!\n");
+    *DEMCR |= 0x01000000;
+    *DWT_CONTROL |= 1;
+
+    start = *DWT_CYCCNT;*/
+}
+
+void end_measure() {
+    /*uint32_t end = *DWT_CYCCNT;
+    uint32_t cycles = end - start;
+
+    printf("Total clock cycles: %d\n", cycles);*/
+}

@@ -13,8 +13,8 @@ int test_all_arithmetic() {
 
     // status &= test_poly_mul_1();
     status &= test_poly_inv_s3();
-    /*status &= test_2_poly_inv_s3();
-    status &= test_poly_inv_s2();
+    status &= test_2_poly_inv_s3();
+    /*status &= test_poly_inv_s2();
     status &= test_2_poly_inv_s2();
     status &= test_poly_inv_sq();
     status &= test_2_poly_inv_sq();
@@ -99,7 +99,9 @@ int test_poly_inv_s3() {
     poly p1 = {0}, result = {0};
     unpack_S3(bytes1, &p1);
 
+    start_measure();
     S3_inverse(&p1, &result);
+    end_measure();
     S3(&result);
 
     uint8_t *packed = malloc(PACKED_S3_BYTES);
@@ -131,7 +133,9 @@ int test_2_poly_inv_s3() {
     poly p1 = {0}, result = {0};
     unpack_S3(bytes1, &p1);
 
+    start_measure();
     S3_inverse(&p1, &result);
+    end_measure();
     S3(&result);
 
     uint8_t *packed = malloc(PACKED_S3_BYTES);

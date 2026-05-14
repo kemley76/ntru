@@ -126,15 +126,6 @@ void poly_mul_Rq(poly *a, poly *b, poly *out) {
     free(c);
 }
 
-void ppoly(short *x, int size) {
-    for (int i = 0; i < size; i++) {
-        if (!x[i])
-            continue;
-        printf("%d * x^%d + ", x[i], i);
-    }
-    printf("\n");
-}
-
 void schoolbook(short *x, short *y, int size, short *out) {
     memset(out, 0, sizeof(short) * size * 2);
     for (int i = 0; i < size; i++) {
@@ -229,7 +220,6 @@ void S2_inverse(poly *a, poly *out) {
     memcpy(&b, a, sizeof(poly));
 
     for (int i = 1; i < N - 2; i++) {
-        printf("%d/700\n", i);
         poly_mul_S(&b, &b, &c);
         S2(&c);
         poly_mul_S(&c, a, &b);
@@ -244,7 +234,6 @@ void S2_inverse(poly *a, poly *out) {
 // bitsliced representation of a polynomial with coefficients in {-1, 0, 1}
 // in total, there are 12 * 64 = 768 > 700 coefficients each represented with 2
 // bits
-
 typedef struct {
     uint64_t b[12]; // 3 256-bit vectors for bottom bits
     uint64_t t[12]; // 3 256-bit vectors for top bits
@@ -252,6 +241,7 @@ typedef struct {
 
 // Method from BITSLICING AND THE METHOD OF FOUR RUSSIANS OVER LARGER FINITE
 // FIELDS by Boothby and Bradshaw
+// Implements 2-bit addition
 void bitsliced_add(uint64_t x0, uint64_t x1, uint64_t y0, uint64_t y1,
                    uint64_t *r_0, uint64_t *r_1) {
     uint64_t s = x0 ^ y1 ^ x1;
@@ -262,12 +252,33 @@ void bitsliced_add(uint64_t x0, uint64_t x1, uint64_t y0, uint64_t y1,
 
 // Method from BITSLICING AND THE METHOD OF FOUR RUSSIANS OVER LARGER FINITE
 // FIELDS by Boothby and Bradshaw
+// Implements 2-bit subtraction
 void bitsliced_sub(uint64_t x0, uint64_t x1, uint64_t y0, uint64_t y1,
                    uint64_t *r_0, uint64_t *r_1) {
     uint64_t t = x0 ^ y0;
     *r_0 = t | (x1 ^ y1);
     *r_1 = (t ^ y1) & (y0 ^ x1);
 }
+
+/*
+ * This algorithm is based on the work described in section 7 Fast constant-time
+gcd computation and modular inversion Daniel J. Bernstein and Bo-Yin Yang
+ *
+ * Since the coefficients of elements in S3 are in the set {−1, 0, 1},
+each coefficients can be represented with 2 bits in signed representation.
+Bitsliced addition and subtraction operations on these coefficients can be done
+in only six bitwise operations as described by Boothby and Bradshaw [4]. This
+implementation stored each polynomial using 6 256-bit vectors. 3 vectors were
+used for the bottom bit, and 3 vectors for the sign bit. Coefficients are
+interleaved as shown below.
+
+This is to allow for efficient multiplication and division of polynomials by x.
+To multiply a polynomial by x, one can cycle the 64-bit chunks around. Chunk 1
+goes to 2. Chunk 2 goes to 3. Chunk 3 goes to 4. Chunk 4 goes to 1, but shifted
+by one bit. The bit that falls off the end of this shift is carried up to the
+next vector of bits. Division can be done in a similar way by cycling chunks in
+reverse and passing the carry bit down to the next vector.
+ */
 
 // Compute inverses in S/3 quotient ring
 // input: a (polynomial in ring Z[x])
@@ -299,11 +310,8 @@ void S3_inverse(poly *a, poly *out) {
         f.b[(i / 256) * 4 + i % 4] |= 1ULL << ((i % 256) / 4); // add x^i to f
     }
     f.b[8] |= 1ULL << 47; // add x^700 to f
-                          //
 
     for (int i = 0; i < 2 * 700 - 1; i++) {
-        // if (i % 20 == 0)
-        // printf("%d/1399\n", i);
         // Replace v with xv.
         uint64_t top_carry = 0;
         uint64_t bottom_carry = 0;
@@ -407,17 +415,6 @@ void S3_inverse(poly *a, poly *out) {
     out->coeffs[N - 1] = 0;
 
     S3(out);
-    /*S3(&original);
-    print_poly("original", &original);
-    print_poly("poly inverse: ", out);
-    printf("final result %d\n", delta);
-
-    poly test = {0};
-    poly_mul_S(out, &original, &test);
-    S3(&test);
-    print_poly("product %d\n", &test);*/
-
-    // assert(delta == 1);
     return;
 }
 
@@ -428,12 +425,7 @@ void Sq_inverse(poly *a, poly *out) {
     poly v0 = {0};
     poly other_a; // other_a is needed since S2_inverse modifies a;
     memcpy(&other_a, a, sizeof(poly));
-    printf("S2 inverse\n");
     S2_inverse(&other_a, &v0);
-    printf("DONE DONE DONE S2 inverse\n");
-    /*if (v0 == NULL) {
-        return;
-    }*/
 
     S2(&v0);
     int t = 1;
