@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <assert.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -126,15 +127,6 @@ void poly_mul_Rq(poly *a, poly *b, poly *out) {
     free(c);
 }
 
-void ppoly(short *x, int size) {
-    for (int i = 0; i < size; i++) {
-        if (!x[i])
-            continue;
-        printf("%d * x^%d + ", x[i], i);
-    }
-    printf("\n");
-}
-
 void schoolbook(short *x, short *y, int size, short *out) {
     memset(out, 0, sizeof(short) * size * 2);
     for (int i = 0; i < size; i++) {
@@ -248,47 +240,192 @@ void S2_inverse(poly *a, poly *out) {
     memcpy(out, &b, sizeof(poly));
 }
 
+// bitsliced representation of a polynomial with coefficients in {-1, 0, 1}
+// in total, there are 12 * 64 = 768 > 700 coefficients each represented with 2
+// bits
+typedef struct {
+    uint64_t b[12]; // 3 256-bit vectors for bottom bits
+    uint64_t t[12]; // 3 256-bit vectors for top bits
+} bit_poly;
+
+// Method from BITSLICING AND THE METHOD OF FOUR RUSSIANS OVER LARGER FINITE
+// FIELDS by Boothby and Bradshaw
+// Implements 2-bit addition
+void bitsliced_add(uint64_t x0, uint64_t x1, uint64_t y0, uint64_t y1,
+                   uint64_t *r_0, uint64_t *r_1) {
+    uint64_t s = x0 ^ y1 ^ x1;
+    uint64_t t = x1 ^ y0 ^ y1;
+    *r_0 = (x0 ^ y1) & (x1 ^ y0);
+    *r_1 = s | t;
+}
+
+// Method from BITSLICING AND THE METHOD OF FOUR RUSSIANS OVER LARGER FINITE
+// FIELDS by Boothby and Bradshaw
+// Implements 2-bit subtraction
+void bitsliced_sub(uint64_t x0, uint64_t x1, uint64_t y0, uint64_t y1,
+                   uint64_t *r_0, uint64_t *r_1) {
+    uint64_t t = x0 ^ y0;
+    *r_0 = t | (x1 ^ y1);
+    *r_1 = (t ^ y1) & (y0 ^ x1);
+}
+
+/*
+ * This algorithm is based on the work described in section 7 Fast constant-time
+gcd computation and modular inversion Daniel J. Bernstein and Bo-Yin Yang
+ *
+ * Since the coefficients of elements in S3 are in the set {−1, 0, 1},
+each coefficients can be represented with 2 bits in signed representation.
+Bitsliced addition and subtraction operations on these coefficients can be done
+in only six bitwise operations as described by Boothby and Bradshaw [4]. This
+implementation stored each polynomial using 6 256-bit vectors. 3 vectors were
+used for the bottom bit, and 3 vectors for the sign bit. Coefficients are
+interleaved as shown below.
+
+This is to allow for efficient multiplication and division of polynomials by x.
+To multiply a polynomial by x, one can cycle the 64-bit chunks around. Chunk 1
+goes to 2. Chunk 2 goes to 3. Chunk 3 goes to 4. Chunk 4 goes to 1, but shifted
+by one bit. The bit that falls off the end of this shift is carried up to the
+next vector of bits. Division can be done in a similar way by cycling chunks in
+reverse and passing the carry bit down to the next vector.
+ */
+
 // Compute inverses in S/3 quotient ring
 // input: a (polynomial in ring Z[x])
 // output: b (polynomial in Z[x]/(3,Φ_n))
 void S3_inverse(poly *a, poly *out) {
-    poly b;
-    poly c = {0};
+    assert(a->coeffs[N - 1] == 0);
+    poly original;
+    memcpy(&original, a, sizeof(poly));
+    S3_bar(&original);
 
-    // initialize b = S3(a)
-    poly other_a;
-    memcpy(&other_a, a, sizeof(poly));
-    S3(&other_a);
-    memcpy(&b, &other_a, sizeof(poly));
+    int delta = 1;
+    bit_poly v = {0};
 
-    for (int i = 1; i < N - 2; i++) {
-        // printf("%d/%d\n", i, N - 2);
-        //  c = b ^ 3
-        start_measure();
-        poly_mul_S(&b, &b, &c);
-        end_measure();
-        poly_mul_S(&c, &b, &c);
-        S3(&c);
-        poly_mul_S(&c, &other_a, &b);
-        S3(&b);
+    // r = 1 in S3
+    bit_poly r = {.b = {1}};
+
+    // f = x^700 + x^699 + ... + x + 1
+    bit_poly f = {0};
+
+    // take original coefficients and bitslice them, but backwards
+    bit_poly g = {0};
+    for (unsigned short i = 0; i < N - 1; i++) {
+        short coeff = original.coeffs[N - 2 - i];
+        if (coeff) // matches 1 or -1
+            g.b[(i / 256) * 4 + i % 4] |= 1ULL << ((i % 256) / 4);
+        if (coeff == -1)
+            g.t[(i / 256) * 4 + i % 4] |= 1ULL << ((i % 256) / 4);
+
+        f.b[(i / 256) * 4 + i % 4] |= 1ULL << ((i % 256) / 4); // add x^i to f
+    }
+    f.b[8] |= 1ULL << 47; // add x^700 to f
+
+    for (int i = 0; i < 2 * 700 - 1; i++) {
+        // Replace v with xv.
+        uint64_t top_carry = 0;
+        uint64_t bottom_carry = 0;
+        for (int j = 0; j < 3; j++) {
+            uint64_t temp = v.b[j * 4 + 3];
+            v.b[j * 4 + 3] = v.b[j * 4 + 2];
+            v.b[j * 4 + 2] = v.b[j * 4 + 1];
+            v.b[j * 4 + 1] = v.b[j * 4 + 0];
+            v.b[j * 4 + 0] = (temp << 1) | bottom_carry;
+            bottom_carry = temp >> 63;
+
+            temp = v.t[j * 4 + 3];
+            v.t[j * 4 + 3] = v.t[j * 4 + 2];
+            v.t[j * 4 + 2] = v.t[j * 4 + 1];
+            v.t[j * 4 + 1] = v.t[j * 4 + 0];
+            v.t[j * 4 + 0] = (temp << 1) | top_carry;
+            top_carry = temp >> 63;
+        }
+
+        // Compute a swap mask as −1 if δ > 0 and g(0) != 0, otherwise 0.
+        int swap_mask = (delta > 0 && (g.b[0] & 1ULL)) ? -1 : 0;
+
+        // Compute c ∈ Z/3 as f(0)g(0).
+        short f_0 = (f.b[0] & 1ULL) ? ((f.t[0] & 1ULL) ? -1 : 1) : 0;
+        short g_0 = (g.b[0] & 1ULL) ? ((g.t[0] & 1ULL) ? -1 : 1) : 0;
+        short c = f_0 * g_0;
+
+        // Replace δ with −δ if the swap mask is set.
+        if (swap_mask)
+            delta = -delta;
+
+        // Add 1 to δ.
+        delta++;
+
+        // Replace (f, g) with (g, f ) if the swap mask is set.
+        if (swap_mask) {
+            bit_poly temp = g;
+            g = f;
+            f = temp;
+        }
+
+        // Replace g with (g − cf)/x.
+        for (int j = 0; j < 12; j++) {
+            if (c == 1) // subtract
+                bitsliced_sub(g.b[j], g.t[j], f.b[j], f.t[j], &g.b[j],
+                              &g.t[j]); // g -= f
+            else if (c == -1)
+                bitsliced_add(g.b[j], g.t[j], f.b[j], f.t[j], &g.b[j],
+                              &g.t[j]); // g += f
+        }
+
+        top_carry = 0ULL;
+        bottom_carry = 0ULL;
+        for (int j = 2; j >= 0; j--) { // go backwards for carrying
+            uint64_t temp = g.b[j * 4 + 0];
+
+            g.b[j * 4 + 0] = g.b[j * 4 + 1];
+            g.b[j * 4 + 1] = g.b[j * 4 + 2];
+            g.b[j * 4 + 2] = g.b[j * 4 + 3];
+            g.b[j * 4 + 3] = (temp >> 1) | (bottom_carry << 63);
+            bottom_carry = temp & 1ULL;
+
+            temp = g.t[j * 4 + 0];
+            g.t[j * 4 + 0] = g.t[j * 4 + 1];
+            g.t[j * 4 + 1] = g.t[j * 4 + 2];
+            g.t[j * 4 + 2] = g.t[j * 4 + 3];
+            g.t[j * 4 + 3] = (temp >> 1) | (top_carry << 63);
+            top_carry = temp & 1ULL;
+        }
+
+        // Replace (v, r) with (r, v) if the swap mask is set.
+        if (swap_mask) {
+            bit_poly temp = r;
+            r = v;
+            v = temp;
+        }
+
+        // Replace r with r − cv.
+        for (int j = 0; j < 12; j++) {
+            if (c == 1) // subtract
+                bitsliced_sub(r.b[j], r.t[j], v.b[j], v.t[j], &r.b[j],
+                              &r.t[j]); // r -= v
+            else if (c == -1)
+                bitsliced_add(r.b[j], r.t[j], v.b[j], v.t[j], &r.b[j],
+                              &r.t[j]); // r += v
+        }
+>>>>>>> s3-inverse
     }
 
-    // b = b ^ 3
-    poly temp = {0};
-    poly_mul_S(&b, &b, &temp);
-    poly_mul_S(&temp, &b, &b);
-    S3(&b);
-
-    // TODO: This seems to be an expensive check. Fix!
-    poly check = {0};
-    poly_mul_S(&other_a, &b, &check);
-    S3(&check);
-    if (check.coeffs[0] == 2) {
-        for (int i = 0; i < N; i++)
-            b.coeffs[i] = (b.coeffs[i] * 2) % 3;
+    // We thus multiply v by f(0), and take the coefficients of x^0,..., x^699
+    // in reverse order, to obtain the desired inverse.
+    short f_0 = (f.b[0] & 1) * ((f.t[0] & 1) ? -1 : 1);
+    for (unsigned short i = 0; i < N - 1; i++) {
+        int idx = (i / 256) * 4 + i % 4;
+        int bit = (i % 256) / 4;
+        short coeff =
+            ((v.b[idx] >> bit) & 1) * (((v.t[idx] >> bit) & 1) ? -1 : 1);
+        out->coeffs[N - 2 - i] = coeff * f_0;
     }
 
-    memcpy(out, &b, sizeof(poly));
+    // Final coefficient (x^700) is always 0 in S3
+    out->coeffs[N - 1] = 0;
+
+    S3(out);
+    return;
 }
 
 // Compute inverses in S/q quotient ring
@@ -299,9 +436,6 @@ void Sq_inverse(poly *a, poly *out) {
     poly other_a; // other_a is needed since S2_inverse modifies a;
     memcpy(&other_a, a, sizeof(poly));
     S2_inverse(&other_a, &v0);
-    /*if (v0 == NULL) {
-        return;
-    }*/
 
     S2(&v0);
     int t = 1;

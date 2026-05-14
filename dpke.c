@@ -5,6 +5,7 @@
 #include "encodings.h"
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // input: coins (bit string of length sample_key_bits)
@@ -19,6 +20,7 @@ void DPKE_Key_Pair(bitstring_t coins, uint8_t *packed_private_key,
 
     // Note that this modifies g to scale by 3
     DPKE_Public_Key(&f, &g, &h, &h_q);
+
     pack_S3(&f, packed_private_key);
     pack_S3(&f_p, packed_private_key + PACKED_S3_BYTES);
     pack_Sq(&h_q, packed_private_key + PACKED_S3_BYTES * 2);
@@ -122,7 +124,4 @@ void DPKE_Decrypt(uint8_t *packed_private_key, uint8_t *packed_ciphertext,
 
     pack_S3(&r, packed_rm);
     pack_S3(&m_0, packed_rm + PACKED_S3_BYTES);
-
-    // TODO TODO TODO
-    // Check if there is a decryption failure. Is possible but very very rare
 }

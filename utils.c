@@ -41,7 +41,6 @@ uint32_t start = 0;
 
 void start_measure() {
     // Enable the trace unit and the cycle counter
-    printf("starting measure!!\n");
     *DEMCR |= 0x01000000;
     *DWT_CONTROL |= 1;
 
@@ -53,4 +52,17 @@ void end_measure() {
     uint32_t cycles = end - start;
 
     printf("Total clock cycles: %d\n", cycles);
+    printf("starting measure!!\n");
+    *DEMCR |= 0x01000000;
+    *DWT_CONTROL |= 1;
+
+    start = *DWT_CYCCNT;
+}
+
+void end_measure() {
+    /*uint32_t end = *DWT_CYCCNT;
+    uint32_t cycles = end - start;
+
+    printf("Total clock cycles: %d\n", cycles);*/
+>>>>>>> s3-inverse
 }

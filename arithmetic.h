@@ -9,7 +9,7 @@
 // The polynomials should never go above N - 1 degrees
 typedef struct {
     short coeffs[704]; // 704 because its greater than N = 701 and equals
-                       // 22*2^5. Good for Karatsuba
+                       // 1*2^6. Good for Karatsuba
 } poly;
 
 typedef struct {
